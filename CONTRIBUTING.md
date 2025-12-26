@@ -43,7 +43,7 @@ When attribution is appropriate, use the `Co-authored-by:` trailer in your commi
 2. **Clone and Install**
 
    ```bash
-   git clone https://github.com/Rackula/Rackula.git
+   git clone https://github.com/RackulaLives/Rackula.git
    cd Rackula
    npm install
    ```

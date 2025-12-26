@@ -52,22 +52,22 @@ describe("QR Code Utilities", () => {
     });
 
     it("returns true for typical share URL length (~500 chars)", () => {
-      const typicalUrl = "https://app.Rackula.com/?l=" + "a".repeat(450);
+      const typicalUrl = "https://app.racku.la/?l=" + "a".repeat(450);
       expect(canFitInQR(typicalUrl)).toBe(true);
     });
 
     it("returns true for medium share URL length (~1000 chars)", () => {
-      const mediumUrl = "https://app.Rackula.com/?l=" + "a".repeat(950);
+      const mediumUrl = "https://app.racku.la/?l=" + "a".repeat(950);
       expect(canFitInQR(mediumUrl)).toBe(true);
     });
 
     it("returns true for large share URL length (~1500 chars)", () => {
-      const largeUrl = "https://app.Rackula.com/?l=" + "a".repeat(1450);
+      const largeUrl = "https://app.racku.la/?l=" + "a".repeat(1450);
       expect(canFitInQR(largeUrl)).toBe(true);
     });
 
     it("returns false for URL exceeding QR capacity", () => {
-      const hugeUrl = "https://app.Rackula.com/?l=" + "a".repeat(1600);
+      const hugeUrl = "https://app.racku.la/?l=" + "a".repeat(1600);
       expect(canFitInQR(hugeUrl)).toBe(false);
     });
   });
@@ -100,7 +100,7 @@ describe("QR Code Utilities", () => {
     });
 
     it("generates QR code for URL-like strings", async () => {
-      const url = "https://app.Rackula.com/?l=eJxLy0zNAQADwwFp";
+      const url = "https://app.racku.la/?l=eJxLy0zNAQADwwFp";
       const dataUrl = await generateQRCode(url);
 
       expect(dataUrl).toMatch(/^data:image\/png;base64,/);
@@ -151,7 +151,7 @@ describe("QR Code Utilities", () => {
     it("handles typical Rackula share URL", async () => {
       // Simulate a typical encoded layout (around 400-600 chars)
       const mockEncodedLayout = "eJx1kE1uwzAMhK9ieJ0FbCdZ5Bg" + "x".repeat(400);
-      const shareUrl = `https://app.Rackula.com/?l=${mockEncodedLayout}`;
+      const shareUrl = `https://app.racku.la/?l=${mockEncodedLayout}`;
 
       expect(canFitInQR(shareUrl)).toBe(true);
 
@@ -163,7 +163,7 @@ describe("QR Code Utilities", () => {
       // Create a URL with substantial encoded data (within QR v24 capacity)
       // QR v24 with EC level L can hold ~1273 alphanumeric chars
       const encodedData = "x".repeat(800);
-      const url = `https://app.Rackula.com/?l=${encodedData}`;
+      const url = `https://app.racku.la/?l=${encodedData}`;
 
       expect(canFitInQR(url)).toBe(true);
 

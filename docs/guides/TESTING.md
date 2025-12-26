@@ -4,11 +4,11 @@ This document describes the testing patterns, conventions, and best practices fo
 
 ## Environments
 
-| Environment | URL                     | Purpose                                  |
-| ----------- | ----------------------- | ---------------------------------------- |
-| **Local**   | `localhost:5173`        | Development with HMR (`npm run dev`)     |
-| **Dev**     | https://dev.Rackula.com | Preview production builds before release |
-| **Prod**    | https://app.Rackula.com | Live production environment              |
+| Environment | URL                   | Purpose                                  |
+| ----------- | --------------------- | ---------------------------------------- |
+| **Local**   | `localhost:5173`      | Development with HMR (`npm run dev`)     |
+| **Dev**     | https://dev.racku.la  | Preview production builds before release |
+| **Prod**    | https://app.racku.la  | Live production environment              |
 
 ### Dev Environment
 

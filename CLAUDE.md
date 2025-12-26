@@ -259,21 +259,21 @@ npm run lint         # ESLint check
 
 ## Repository
 
-| Location    | URL                                       |
-| ----------- | ----------------------------------------- |
-| Production  | https://app.Rackula.com/                  |
-| Dev/Preview | https://dev.Rackula.com/                  |
-| Primary     | https://github.com/RackulaLives/Rackula        |
+| Location    | URL                                        |
+| ----------- | ------------------------------------------ |
+| Production  | https://app.racku.la/                      |
+| Dev/Preview | https://dev.racku.la/                      |
+| Primary     | https://github.com/RackulaLives/Rackula    |
 | Issues      | https://github.com/RackulaLives/Rackula/issues |
 
 ## Deployment
 
 Two environments with different deployment triggers:
 
-| Environment | URL             | Trigger        | Infrastructure |
-| ----------- | --------------- | -------------- | -------------- |
-| **Dev**     | dev.Rackula.com | Push to `main` | GitHub Pages   |
-| **Prod**    | app.Rackula.com | Git tag `v*`   | VPS (Docker)   |
+| Environment | URL           | Trigger        | Infrastructure |
+| ----------- | ------------- | -------------- | -------------- |
+| **Dev**     | dev.racku.la  | Push to `main` | GitHub Pages   |
+| **Prod**    | app.racku.la  | Git tag `v*`   | VPS (Docker)   |
 
 ### Dev Deployment
 
@@ -295,8 +295,8 @@ git push && git push --tags  # Triggers: Docker build → push to ghcr.io → VP
 ### Workflow
 
 1. Develop locally (`npm run dev`)
-2. Push to `main` → auto-deploys to dev.Rackula.com
+2. Push to `main` → auto-deploys to dev.racku.la
 3. Test on dev environment
-4. Tag release → auto-deploys to app.Rackula.com
+4. Tag release → auto-deploys to app.racku.la
 
-**Analytics:** Umami (self-hosted at `analytics.Rackula.com`) - privacy-focused, no cookies. Separate tracking for dev and prod environments. Configure via `VITE_UMAMI_*` env vars. Analytics utility at `src/lib/utils/analytics.ts`.
+**Analytics:** Umami (self-hosted at `analytics.racku.la`) - privacy-focused, no cookies. Separate tracking for dev and prod environments. Configure via `VITE_UMAMI_*` env vars. Analytics utility at `src/lib/utils/analytics.ts`.

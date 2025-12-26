@@ -100,7 +100,7 @@ describe("HelpPanel", () => {
 
       const projectLink = screen.getByRole("link", { name: /project/i });
       expect(projectLink.getAttribute("href")).toBe(
-        "https://github.com/Rackula/Rackula",
+        "https://github.com/RackulaLives/Rackula",
       );
     });
 

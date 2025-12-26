@@ -157,7 +157,7 @@ No legacy support or migration code. Features are implemented as if they're the 
 │                                                  ▼           │
 │                                        ┌─────────────────┐   │
 │                                        │  GitHub Pages   │   │
-│                                        │ dev.Rackula.com │   │
+│                                        │  dev.racku.la   │   │
 │                                        └─────────────────┘   │
 │                                                              │
 │   Git tag v* ───────────────────────────────────────────────│
@@ -171,15 +171,15 @@ No legacy support or migration code. Features are implemented as if they're the 
 │                                                  ▼           │
 │                                        ┌─────────────────┐   │
 │                                        │   VPS (Docker)  │   │
-│                                        │ app.Rackula.com │   │
+│                                        │  app.racku.la   │   │
 │                                        └─────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-| Environment | URL             | Trigger        | Use Case         |
-| ----------- | --------------- | -------------- | ---------------- |
-| Dev         | dev.Rackula.com | Push to `main` | Preview, testing |
-| Prod        | app.Rackula.com | Git tag `v*`   | Live users       |
+| Environment | URL           | Trigger        | Use Case         |
+| ----------- | ------------- | -------------- | ---------------- |
+| Dev         | dev.racku.la  | Push to `main` | Preview, testing |
+| Prod        | app.racku.la  | Git tag `v*`   | Live users       |
 
 ## Documentation Map
 

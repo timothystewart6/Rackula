@@ -586,9 +586,9 @@ describe("Share Utilities", () => {
       Object.defineProperty(window, "location", {
         value: {
           ...originalLocation,
-          origin: "https://app.Rackula.com",
+          origin: "https://app.racku.la",
           pathname: "/",
-          href: "https://app.Rackula.com/",
+          href: "https://app.racku.la/",
         },
         writable: true,
       });
@@ -605,7 +605,7 @@ describe("Share Utilities", () => {
       const layout = createTestLayout();
       const url = generateShareUrl(layout);
 
-      expect(url).toContain("https://app.Rackula.com/");
+      expect(url).toContain("https://app.racku.la/");
       expect(url).toContain("?l=");
     });
 

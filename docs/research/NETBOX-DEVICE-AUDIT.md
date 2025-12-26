@@ -1,7 +1,7 @@
 # NetBox Device Library Audit for Homelab Relevance
 
 **Date:** 2025-12-19
-**Related Issue:** [#96](https://github.com/Rackula/Rackula/issues/96)
+**Related Issue:** [#96](https://github.com/RackulaLives/Rackula/issues/96)
 **Repository:** [netbox-community/devicetype-library](https://github.com/netbox-community/devicetype-library)
 
 ---

@@ -30,10 +30,10 @@ Homelabbers planning rack layouts. Desktop browser users for creation/editing, m
 
 ### 1.5 Links
 
-| Resource   | URL                                |
-| ---------- | ---------------------------------- |
-| Live Demo  | https://app.Rackula.com/           |
-| Repository | https://github.com/Rackula/Rackula |
+| Resource   | URL                                      |
+| ---------- | ---------------------------------------- |
+| Live Demo  | https://app.racku.la/                    |
+| Repository | https://github.com/RackulaLives/Rackula  |
 
 ---
 
@@ -1170,10 +1170,10 @@ npm run check        # Svelte type check
 
 ### 13.1 Environments
 
-| Environment | URL             | Trigger        | Platform     |
-| ----------- | --------------- | -------------- | ------------ |
-| Dev         | dev.Rackula.com | Push to `main` | GitHub Pages |
-| Production  | app.Rackula.com | Git tag `v*`   | VPS (Docker) |
+| Environment | URL           | Trigger        | Platform     |
+| ----------- | ------------- | -------------- | ------------ |
+| Dev         | dev.racku.la  | Push to `main` | GitHub Pages |
+| Production  | app.racku.la  | Git tag `v*`   | VPS (Docker) |
 
 ### 13.2 Security Headers
 
@@ -1190,11 +1190,11 @@ Production (nginx) includes these security headers:
 
 ```
 default-src 'self';
-script-src 'self' 'unsafe-inline' https://analytics.Rackula.com https://static.cloudflareinsights.com;
+script-src 'self' 'unsafe-inline' https://analytics.racku.la https://static.cloudflareinsights.com;
 style-src 'self' 'unsafe-inline';
 img-src 'self' data: blob:;
 font-src 'self';
-connect-src 'self' https://analytics.Rackula.com https://static.cloudflareinsights.com;
+connect-src 'self' https://analytics.racku.la https://static.cloudflareinsights.com;
 frame-ancestors 'self';
 ```
 
@@ -1202,11 +1202,11 @@ Notes:
 
 - `'unsafe-inline'` for styles required for Svelte scoped styles
 - `'unsafe-inline'` for scripts required for Cloudflare Web Analytics
-- Analytics domains whitelisted: Umami (analytics.Rackula.com) and Cloudflare Web Analytics
+- Analytics domains whitelisted: Umami (analytics.racku.la) and Cloudflare Web Analytics
 - `data:` and `blob:` for images support export previews and device images
 - GitHub Pages (dev) does not support custom headers
 
-See [#102](https://github.com/Rackula/Rackula/issues/102) for security research.
+See [#102](https://github.com/RackulaLives/Rackula/issues/102) for security research.
 
 ---
 
@@ -2210,7 +2210,7 @@ Session properties are set via `umami.identify()` on script load:
 
 ### 20.7 Production Deployment
 
-The hosted app at `app.Rackula.com` uses a self-hosted Umami instance at `analytics.Rackula.com`.
+The hosted app at `app.racku.la` uses a self-hosted Umami instance at `analytics.racku.la`.
 
 ---
 

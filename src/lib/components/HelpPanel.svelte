@@ -80,7 +80,7 @@
     },
   ];
 
-  const GITHUB_URL = "https://github.com/Rackula/Rackula";
+  const GITHUB_URL = "https://github.com/RackulaLives/Rackula";
 
   // Pre-filled issue URLs
   const bugReportUrl = $derived(() => {

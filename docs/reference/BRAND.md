@@ -629,10 +629,10 @@ The badge text features a "cylon-style" animated gradient sweep — a subtle red
 
 Official URLs for use throughout the application:
 
-| Token        | URL                                  | Usage                 |
-| ------------ | ------------------------------------ | --------------------- |
-| `GITHUB_URL` | `https://github.com/Rackula/Rackula` | Repository link, Help |
-| `DEMO_URL`   | `https://app.Rackula.com/`           | Live demo link        |
+| Token        | URL                                        | Usage                 |
+| ------------ | ------------------------------------------ | --------------------- |
+| `GITHUB_URL` | `https://github.com/RackulaLives/Rackula`  | Repository link, Help |
+| `DEMO_URL`   | `https://app.racku.la/`                    | Live demo link        |
 
 ---
 

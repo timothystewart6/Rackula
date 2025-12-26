@@ -174,7 +174,7 @@ export function generateShareUrl(layout: Layout): string {
   const baseUrl =
     typeof window !== "undefined"
       ? window.location.origin + window.location.pathname
-      : "https://app.Rackula.com/";
+      : "https://app.racku.la/";
   return `${baseUrl}?l=${encoded}`;
 }
 

@@ -1,11 +1,11 @@
 <p align="center">
-  <a href="https://app.Rackula.com"><img src="assets/Rackula-lockup-staggered-dark.svg#gh-dark-mode-only" alt="Rackula" width="420"></a>
+  <a href="https://app.racku.la"><img src="assets/Rackula-lockup-staggered-dark.svg#gh-dark-mode-only" alt="Rackula" width="420"></a>
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-bd93f9?style=for-the-badge&labelColor=44475a" alt="License: MIT"></a>
-  <img src="https://img.shields.io/github/v/release/Rackula/Rackula?style=for-the-badge&labelColor=44475a&color=ff79c6" alt="GitHub Release">
-  <a href="https://github.com/Rackula/Rackula/pkgs/container/Rackula"><img src="https://img.shields.io/github/v/release/Rackula/Rackula?style=for-the-badge&labelColor=44475a&color=50fa7b&label=docker&logo=docker&logoColor=white" alt="Docker"></a>
+  <img src="https://img.shields.io/github/v/release/RackulaLives/Rackula?style=for-the-badge&labelColor=44475a&color=ff79c6" alt="GitHub Release">
+  <a href="https://github.com/RackulaLives/Rackula/pkgs/container/Rackula"><img src="https://img.shields.io/github/v/release/RackulaLives/Rackula?style=for-the-badge&labelColor=44475a&color=50fa7b&label=docker&logo=docker&logoColor=white" alt="Docker"></a>
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 
 Plan your rack layout. Drag your devices in, move them around, export it. There's no account. It runs in your browser. You can close the tab whenever you want. I'm not going to send you emails about it.
 
-The name ends with "arr" because it makes rhyming easier.
+The name is Rackula. Like Dracula. But for racks.
 
 ## What It _Do_
 
@@ -31,18 +31,18 @@ The name ends with "arr" because it makes rhyming easier.
 
 ## Get Started
 
-**Use it right now:** [app.Rackula.com](https://app.Rackula.com)
+**Use it right now:** [app.racku.la](https://app.racku.la)
 
 **Selfhost with that box whale thing:**
 
 ```bash
-docker run -d -p 8080:80 ghcr.io/Rackula/Rackula:latest
+docker run -d -p 8080:80 ghcr.io/RackulaLives/Rackula:latest
 ```
 
 Or with Compose:
 
 ```bash
-curl -O https://raw.githubusercontent.com/Rackula/Rackula/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/RackulaLives/Rackula/main/docker-compose.yml
 docker compose up -d
 ```
 
@@ -51,7 +51,7 @@ Then open `http://localhost:8080` and get after it.
 **Build from source:**
 
 ```bash
-git clone https://github.com/Rackula/Rackula.git
+git clone https://github.com/RackulaLives/Rackula.git
 cd Rackula && npm install && npm run build
 ```
 

@@ -6,9 +6,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Rackula/Rackula.git"
+    "url": "https://github.com/RackulaLives/Rackula.git"
   },
-  "homepage": "https://github.com/Rackula/Rackula",
+  "homepage": "https://github.com/RackulaLives/Rackula",
   "private": true,
   "type": "module",
   "scripts": {

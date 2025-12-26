@@ -6,7 +6,7 @@ status: active
 
 # Rackula — Product Roadmap
 
-Strategic vision and version philosophy. For active work items, see [GitHub Issues](https://github.com/Rackula/Rackula/issues).
+Strategic vision and version philosophy. For active work items, see [GitHub Issues](https://github.com/RackulaLives/Rackula/issues).
 
 ---
 
@@ -37,7 +37,7 @@ Rackula is a lightweight, FOSS, web-based rack layout designer for homelabbers. 
 
 **v0.7.0** — [Theme TBD based on community feedback]
 
-See [GitHub Milestones](https://github.com/Rackula/Rackula/milestones) for version-specific work items.
+See [GitHub Milestones](https://github.com/RackulaLives/Rackula/milestones) for version-specific work items.
 
 ---
 
@@ -116,7 +116,7 @@ Features that will **not** be implemented:
 
 ## Contributing
 
-See [GitHub Issues](https://github.com/Rackula/Rackula/issues) for ways to contribute:
+See [GitHub Issues](https://github.com/RackulaLives/Rackula/issues) for ways to contribute:
 
 - Issues labelled `ready` are available for implementation
 - Issues labelled `triage` need maintainer review first
@@ -124,4 +124,4 @@ See [GitHub Issues](https://github.com/Rackula/Rackula/issues) for ways to contr
 
 ---
 
-_This document defines product vision. For active work items, see [GitHub Issues](https://github.com/Rackula/Rackula/issues)._
+_This document defines product vision. For active work items, see [GitHub Issues](https://github.com/RackulaLives/Rackula/issues)._

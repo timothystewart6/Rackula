@@ -1,1 +1,0 @@
-{"version":3,"file":"mount.d.ts","sourceRoot":"","sources":["../../src/core/mount.js"],"names":[],"mappings":"AAWA,2EAA2E;AAC3E,6CAE6E;AAsD7E;;;;;;;;;;;GAWG;AACH,sBAT8C,CAAC,SAAlC,GAAgC,kCAGhC;IACR,SAAS,EAAE,CAAC,CAAA;IACZ,OAAO,EAAE,MAAM,IAAI,CAAA;IACnB,QAAQ,EAAE,CAAC,KAAK,EAAE,OAAO,CAAC,GAA6B,CAAC,KAAK,OAAO,CAAC,IAAI,CAAC,CAAA;CAC3E,CAcH"}

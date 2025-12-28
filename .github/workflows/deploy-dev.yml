@@ -1,61 +1,53 @@
-name: Deploy to Dev (GitHub Pages)
+name: Deploy Dev
 
 on:
   push:
-    branches: [dev]
-  workflow_dispatch:
+    branches: [main]
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
         with:
-          node-version: "22"
-          cache: "npm"
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Pin npm 11 to match local dev environment (prevents lockfile sync issues)
-      - run: npm install -g npm@11
-
-      - run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm run test:run
-
-      - name: Build
-        run: npm run build
-        env:
-          VITE_ENV: "development"
-          VITE_UMAMI_ENABLED: "true"
-          VITE_UMAMI_WEBSITE_ID: ${{ secrets.UMAMI_DEV_WEBSITE_ID }}
-          VITE_UMAMI_SCRIPT_URL: "https://analytics.Rackula.com/script.js"
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
         with:
-          path: dist
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: "https://dev.Rackula.com"
+    needs: build-and-deploy
+    runs-on: [self-hosted, rackula-vps]
+
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Deploy to dev
+        run: |
+          cd /opt/rackula/rackula-dev
+          docker compose pull
+          docker compose up -d

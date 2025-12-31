@@ -803,7 +803,10 @@
   onkeydown={(e) => konamiDetector.handleKeyDown(e)}
 />
 
-<div class="app-layout">
+<div
+  class="app-layout"
+  style="--sidebar-width: min({uiStore.sidebarWidthPx}px, var(--sidebar-width-max))"
+>
   <Toolbar
     hasSelection={selectionStore.hasSelection}
     hasRacks={layoutStore.hasRack}

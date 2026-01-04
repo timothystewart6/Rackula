@@ -76,7 +76,7 @@ export function getPortPosition(
   device: DevicePosition,
   portIndex: number,
   rackHeight: number,
-  rackWidth: number = BASE_RACK_WIDTH
+  rackWidth: number = BASE_RACK_WIDTH,
 ): Point {
   // Device Y position (SVG origin at top-left, U numbers from bottom)
   const deviceY =
@@ -131,7 +131,7 @@ export function quadraticBezierPath(
   source: Point,
   target: Point,
   rackBounds: Rect,
-  options: PathOptions = {}
+  options: PathOptions = {},
 ): string {
   const gutterOffset = options.gutterOffset ?? DEFAULT_GUTTER_OFFSET;
 
@@ -155,7 +155,7 @@ export function cubicBezierPath(
   source: Point,
   target: Point,
   rackBounds: Rect,
-  options: PathOptions = {}
+  options: PathOptions = {},
 ): string {
   const gutterOffset = options.gutterOffset ?? DEFAULT_GUTTER_OFFSET;
 
@@ -183,7 +183,7 @@ export function orthogonalPath(
   source: Point,
   target: Point,
   rackBounds: Rect,
-  options: PathOptions = {}
+  options: PathOptions = {},
 ): string {
   const gutterOffset = options.gutterOffset ?? DEFAULT_GUTTER_OFFSET;
   const gutterX = rackBounds.x + rackBounds.width + gutterOffset;
@@ -205,7 +205,7 @@ export function externalChannelPath(
   source: Point,
   target: Point,
   rackBounds: Rect,
-  options: PathOptions = {}
+  options: PathOptions = {},
 ): string {
   const gutterOffset = options.gutterOffset ?? DEFAULT_GUTTER_OFFSET;
   const index = options.index ?? 0;
@@ -237,7 +237,7 @@ export function externalChannelPath(
 export function crossFaceTunnelPath(
   source: Point,
   deviceEdge: Point,
-  _rackBounds: Rect
+  _rackBounds: Rect,
 ): string {
   // Path goes from port to device edge
   return `M ${source.x},${source.y} L ${deviceEdge.x},${deviceEdge.y}`;
@@ -251,7 +251,7 @@ export function crossFaceTunnelPath(
 export function crossFaceBridgePath(
   frontPort: Point,
   rearPort: Point,
-  gapWidth: number
+  gapWidth: number,
 ): string {
   // Curved path that bridges the gap between views
   const c1x = frontPort.x + gapWidth / 3;
@@ -283,7 +283,7 @@ export function calculateConnectionPath(
   target: Point,
   rackBounds: Rect,
   algorithm: PathAlgorithm = "external",
-  options: PathOptions = {}
+  options: PathOptions = {},
 ): string {
   switch (algorithm) {
     case "straight":

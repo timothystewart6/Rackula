@@ -37,15 +37,15 @@ Connections use the MVP Connection model (#365):
 
 ```typescript
 interface Connection {
-  id: string;           // UUID
-  a_port_id: string;    // PlacedPort.id
-  b_port_id: string;    // PlacedPort.id
+  id: string; // UUID
+  a_port_id: string; // PlacedPort.id
+  b_port_id: string; // PlacedPort.id
   label?: string;
-  color?: string;       // Hex color for visualization
+  color?: string; // Hex color for visualization
 }
 
 interface PlacedPort {
-  id: string;           // UUID - stable identity
+  id: string; // UUID - stable identity
   template_name: string;
   template_index: number;
   type: InterfaceType;
@@ -69,10 +69,10 @@ interface PlacedPort {
 From `src/lib/constants/layout.ts`:
 
 ```typescript
-U_HEIGHT_PX = 22          // 1U = 22 pixels
-RAIL_WIDTH = 17           // Mounting rail width
-BASE_RACK_WIDTH = 220     // 19" rack base width
-BASE_RACK_PADDING = 18    // Top padding for rack name
+U_HEIGHT_PX = 22; // 1U = 22 pixels
+RAIL_WIDTH = 17; // Mounting rail width
+BASE_RACK_WIDTH = 220; // 19" rack base width
+BASE_RACK_PADDING = 18; // Top padding for rack name
 ```
 
 ### 3.2 Port Positioning Constants
@@ -80,9 +80,9 @@ BASE_RACK_PADDING = 18    // Top padding for rack name
 From PortIndicators.svelte:
 
 ```typescript
-PORT_RADIUS = 3           // Port circle radius
-PORT_SPACING = 8          // Distance between port centers
-PORT_Y_OFFSET = 8         // Distance from device bottom edge
+PORT_RADIUS = 3; // Port circle radius
+PORT_SPACING = 8; // Distance between port centers
+PORT_Y_OFFSET = 8; // Distance from device bottom edge
 ```
 
 ### 3.3 Port Position Calculation
@@ -94,16 +94,17 @@ function getPortPosition(
   device: PlacedDevice,
   deviceType: DeviceType,
   portIndex: number,
-  rackHeight: number
+  rackHeight: number,
 ): { x: number; y: number } {
   // Device Y position (SVG origin at top-left)
-  const deviceY = (rackHeight - device.position - deviceType.u_height + 1) * U_HEIGHT_PX;
+  const deviceY =
+    (rackHeight - device.position - deviceType.u_height + 1) * U_HEIGHT_PX;
 
   // Device X starts after left rail
   const deviceX = RAIL_WIDTH;
 
   // Device dimensions
-  const deviceWidth = BASE_RACK_WIDTH - (RAIL_WIDTH * 2);
+  const deviceWidth = BASE_RACK_WIDTH - RAIL_WIDTH * 2;
   const deviceHeight = deviceType.u_height * U_HEIGHT_PX;
 
   // Port positions (centered horizontally at device bottom)
@@ -112,7 +113,7 @@ function getPortPosition(
   const portStartX = (deviceWidth - totalPortWidth) / 2;
 
   // Final absolute position
-  const x = deviceX + portStartX + (portIndex * PORT_SPACING);
+  const x = deviceX + portStartX + portIndex * PORT_SPACING;
   const y = deviceY + deviceHeight - PORT_Y_OFFSET;
 
   // Add rack transform offset
@@ -120,7 +121,7 @@ function getPortPosition(
 
   return {
     x,
-    y: y + rackOffset
+    y: y + rackOffset,
   };
 }
 ```
@@ -145,17 +146,20 @@ For connections, we render at the rack level (before the device transform), so w
 ### 4.1 Straight Lines
 
 **SVG:**
+
 ```svg
 <line x1="{port1.x}" y1="{port1.y}" x2="{port2.x}" y2="{port2.y}"
       stroke="{color}" stroke-width="2"/>
 ```
 
 **Pros:**
+
 - Simplest implementation
 - Fastest rendering
 - Clear visual connection
 
 **Cons:**
+
 - Crosses through device bodies
 - Visual clutter with many connections
 - No routing intelligence
@@ -165,12 +169,14 @@ For connections, we render at the rack level (before the device transform), so w
 ### 4.2 Quadratic Bezier Curves
 
 **SVG:**
+
 ```svg
 <path d="M {p1.x},{p1.y} Q {cx},{cy} {p2.x},{p2.y}"
       stroke="{color}" stroke-width="2" fill="none"/>
 ```
 
 Control point calculation:
+
 ```typescript
 // Midpoint with horizontal offset
 const cx = (p1.x + p2.x) / 2 + GUTTER_OFFSET;
@@ -178,11 +184,13 @@ const cy = (p1.y + p2.y) / 2;
 ```
 
 **Pros:**
+
 - Smooth curves
 - Single control point (simple)
 - Avoids crossing devices with good control point placement
 
 **Cons:**
+
 - Limited flexibility for complex paths
 - Can look unnatural for vertical connections
 - Control point calculation is tricky
@@ -192,12 +200,14 @@ const cy = (p1.y + p2.y) / 2;
 ### 4.3 Cubic Bezier Curves
 
 **SVG:**
+
 ```svg
 <path d="M {p1.x},{p1.y} C {c1x},{c1y} {c2x},{c2y} {p2.x},{p2.y}"
       stroke="{color}" stroke-width="2" fill="none"/>
 ```
 
 Control point calculation:
+
 ```typescript
 // Exit horizontally from port, then curve to destination
 const GUTTER_X = rackWidth + 20; // Outside rack
@@ -209,11 +219,13 @@ const c2y = p2.y;
 ```
 
 **Pros:**
+
 - Smooth S-curves
 - Two control points for natural-looking paths
 - Professional appearance
 
 **Cons:**
+
 - More complex calculation
 - Slightly more rendering cost
 
@@ -222,17 +234,20 @@ const c2y = p2.y;
 ### 4.4 Orthogonal Routing
 
 **SVG:**
+
 ```svg
 <path d="M {p1.x},{p1.y} H {gutter} V {p2.y} H {p2.x}"
       stroke="{color}" stroke-width="2" fill="none"/>
 ```
 
 **Pros:**
+
 - Clear, engineering-style routing
 - Easy to trace visually
 - Standard in circuit diagrams
 
 **Cons:**
+
 - Needs path conflict resolution
 - More complex bundling logic
 - Less organic appearance
@@ -254,6 +269,7 @@ const c2y = p2.y;
 ```
 
 **SVG with cubic bezier:**
+
 ```svg
 <!-- Connection from D1 to D5 -->
 <path d="M {p1.x},{p1.y}
@@ -262,12 +278,14 @@ const c2y = p2.y;
 ```
 
 **Pros:**
+
 - Never crosses device bodies
 - Clean visual hierarchy
 - Natural bundling by direction
 - Best visual clarity
 
 **Cons:**
+
 - Uses more horizontal space
 - Requires gutter calculation
 - Need to balance left/right routing
@@ -281,13 +299,16 @@ const c2y = p2.y;
 ### 5.1 Challenge
 
 When a connection goes from a front port to a rear port:
+
 - In single-view mode, one endpoint is not visible
 - In dual-view mode, the connection spans two separate SVG views
 
 ### 5.2 Approaches Evaluated
 
 #### A. Tunnel Effect
+
 Show connection "entering" the device with a tunnel indicator:
+
 ```svg
 <!-- Front view: Connection goes TO device edge -->
 <path d="M {port.x},{port.y} L {deviceEdge},{deviceMid}"/>
@@ -297,7 +318,9 @@ Show connection "entering" the device with a tunnel indicator:
 **Verdict:** Good for single-view mode
 
 #### B. Dashed Line Continuation
+
 Use dashed stroke to indicate "through rack":
+
 ```svg
 <path d="..." stroke-dasharray="4 2" class="cross-face"/>
 ```
@@ -305,7 +328,9 @@ Use dashed stroke to indicate "through rack":
 **Verdict:** Confusing - looks like "planned" connection
 
 #### C. Edge Markers
+
 Small arrows at device edge showing continuation:
+
 ```svg
 <polygon points="..." class="continuation-arrow"/>
 ```
@@ -313,7 +338,9 @@ Small arrows at device edge showing continuation:
 **Verdict:** Too subtle, easy to miss
 
 #### D. Dual-View Bridge (Recommended)
+
 In dual-view mode, render a curved path that bridges the gap:
+
 ```svg
 <!-- Spans both views with an arc through the gap -->
 <path d="M {frontPort.x},{frontPort.y}
@@ -337,6 +364,7 @@ In dual-view mode, render a curved path that bridges the gap:
 ### 6.1 When to Bundle
 
 Bundle connections when:
+
 - 3+ connections between same device pair
 - 5+ connections in same routing direction
 - Visual clutter exceeds threshold
@@ -364,12 +392,14 @@ Bundle connections when:
 ### 7.1 Benchmark Setup
 
 Test scenarios:
+
 - 10 connections: Typical small homelab
 - 50 connections: Medium deployment
 - 100 connections: Large homelab / small enterprise
 - 200 connections: Stress test
 
 Metrics:
+
 - Initial render time
 - SVG DOM node count
 - Interaction responsiveness (hover latency)
@@ -384,12 +414,12 @@ Metrics:
 
 ### 7.3 Expected Performance
 
-| Connections | DOM Nodes | Render Time | Target |
-|-------------|-----------|-------------|--------|
-| 10 | ~20 | <5ms | Pass |
-| 50 | ~100 | <10ms | Pass |
-| 100 | ~200 | <16ms | Pass |
-| 200 | ~400 | <32ms | Acceptable |
+| Connections | DOM Nodes | Render Time | Target     |
+| ----------- | --------- | ----------- | ---------- |
+| 10          | ~20       | <5ms        | Pass       |
+| 50          | ~100      | <10ms       | Pass       |
+| 100         | ~200      | <16ms       | Pass       |
+| 200         | ~400      | <32ms       | Acceptable |
 
 **Note:** Each connection = 1 path + optional hover overlay
 
@@ -415,12 +445,13 @@ Metrics:
 ### 8.2 Port-to-Connection Linking
 
 When hovering a port, highlight all connected connections:
+
 ```typescript
 function handlePortHover(portId: string) {
   const connected = connections.filter(
-    c => c.a_port_id === portId || c.b_port_id === portId
+    (c) => c.a_port_id === portId || c.b_port_id === portId,
   );
-  connected.forEach(c => highlightConnection(c.id));
+  connected.forEach((c) => highlightConnection(c.id));
 }
 ```
 
@@ -478,6 +509,7 @@ function handlePortHover(portId: string) {
 ### 10.2 Screen Reader Announcements
 
 When connection state changes:
+
 ```typescript
 announceToScreenReader(`Connection ${label} highlighted`);
 ```
@@ -511,7 +543,10 @@ Insert before devices layer:
   <!-- ... rack background, rails, slots ... -->
 
   <!-- Layer 7.5: Connections (behind devices) -->
-  <g class="connection-layer" transform="translate(0, {RACK_PADDING + RAIL_WIDTH})">
+  <g
+    class="connection-layer"
+    transform="translate(0, {RACK_PADDING + RAIL_WIDTH})"
+  >
     {#each connections as connection}
       <ConnectionPath {connection} />
     {/each}
@@ -542,29 +577,32 @@ src/lib/components/
 ### 11.4 Implementation Phases
 
 **Phase 1 (MVP):**
+
 - Basic cubic bezier paths
 - Same-face connections only
 - Single color per connection
 - No bundling
 
 **Phase 2:**
+
 - External channel routing
 - Cross-face visualization
 - Hover highlighting
 
 **Phase 3:**
+
 - Connection bundling
 - Performance optimization
 - Export support
 
 ### 11.5 Estimated Effort
 
-| Phase | Days |
-|-------|------|
-| Phase 1 (MVP) | 2-3 |
-| Phase 2 | 2 |
-| Phase 3 | 1-2 |
-| **Total** | **5-7 days** |
+| Phase         | Days         |
+| ------------- | ------------ |
+| Phase 1 (MVP) | 2-3          |
+| Phase 2       | 2            |
+| Phase 3       | 1-2          |
+| **Total**     | **5-7 days** |
 
 ---
 
@@ -588,15 +626,16 @@ function calculateConnectionPath(
   source: Point,
   target: Point,
   rackBounds: Rect,
-  options: PathOptions
+  options: PathOptions,
 ): string {
   const GUTTER_OFFSET = 30; // Pixels outside rack
 
   // Determine routing side (balance left/right)
-  const side = source.y > target.y ? 'left' : 'right';
-  const gutterX = side === 'left'
-    ? rackBounds.x - GUTTER_OFFSET
-    : rackBounds.x + rackBounds.width + GUTTER_OFFSET;
+  const side = source.y > target.y ? "left" : "right";
+  const gutterX =
+    side === "left"
+      ? rackBounds.x - GUTTER_OFFSET
+      : rackBounds.x + rackBounds.width + GUTTER_OFFSET;
 
   // Control points for cubic bezier
   const c1 = { x: gutterX, y: source.y };
@@ -610,12 +649,12 @@ function calculateConnectionPath(
 
 ## 13. Decision Log
 
-| Date | Decision | Rationale |
-|------|----------|-----------|
-| 2026-01-03 | Use cubic bezier curves | Best balance of aesthetics and implementation complexity |
-| 2026-01-03 | External channel routing | Prevents device occlusion, clearest visual hierarchy |
-| 2026-01-03 | Render behind devices | Connections support devices, not vice versa |
-| 2026-01-03 | Defer bundling to Phase 3 | MVP doesn't need it, complexity can wait |
+| Date       | Decision                  | Rationale                                                |
+| ---------- | ------------------------- | -------------------------------------------------------- |
+| 2026-01-03 | Use cubic bezier curves   | Best balance of aesthetics and implementation complexity |
+| 2026-01-03 | External channel routing  | Prevents device occlusion, clearest visual hierarchy     |
+| 2026-01-03 | Render behind devices     | Connections support devices, not vice versa              |
+| 2026-01-03 | Defer bundling to Phase 3 | MVP doesn't need it, complexity can wait                 |
 
 ---
 

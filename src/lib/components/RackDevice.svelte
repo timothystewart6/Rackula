@@ -8,6 +8,7 @@
     DisplayMode,
     InterfaceTemplate,
     RackView,
+    SlotPosition,
   } from "$lib/types";
   import PortIndicators from "./PortIndicators.svelte";
   import {
@@ -44,6 +45,8 @@
     placedDeviceId?: string;
     /** Custom colour override for this placement (overrides device type colour) */
     colourOverride?: string;
+    /** Slot position for half-width devices */
+    slotPosition?: SlotPosition;
     onselect?: (event: CustomEvent<{ slug: string; position: number }>) => void;
     ondragstart?: (
       event: CustomEvent<{ rackId: string; deviceIndex: number }>,
@@ -67,6 +70,7 @@
     placedDeviceName,
     placedDeviceId,
     colourOverride,
+    slotPosition = "full",
     onselect,
     ondragstart: ondragstartProp,
     ondragend: ondragendProp,
@@ -137,7 +141,14 @@
     (rackHeight - position - device.u_height + 1) * uHeight,
   );
   const deviceHeight = $derived(device.u_height * uHeight);
-  const deviceWidth = $derived(rackWidth - RAIL_WIDTH * 2);
+  // Full interior width (between rails)
+  const fullWidth = $derived(rackWidth - RAIL_WIDTH * 2);
+  // Device width depends on slot position: half-width for left/right, full for full
+  const deviceWidth = $derived(
+    slotPosition === "full" ? fullWidth : fullWidth / 2,
+  );
+  // X offset within the interior: 0 for left/full, half for right
+  const slotXOffset = $derived(slotPosition === "right" ? fullWidth / 2 : 0);
 
   // Calculate available width for centered text (accounting for icon areas)
   // Uses shared constants from text-sizing.ts for consistency with exports
@@ -337,7 +348,7 @@
   bind:this={groupElement}
   data-device-id={device.slug}
   data-device-position={position}
-  transform="translate({RAIL_WIDTH}, {yPosition})"
+  transform="translate({RAIL_WIDTH + slotXOffset}, {yPosition})"
   class="rack-device"
   class:selected
   class:dragging={isDragging}

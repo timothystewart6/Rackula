@@ -192,22 +192,21 @@ CodeRabbit provides AI code review on every PR. **Claude Code must wait for Code
    - Push changes and wait for re-review
 4. Only merge after CodeRabbit approves
 
-### CodeRabbit CLI (Optional Local Review)
+### CodeRabbit CLI (Local Review)
 
-For pre-push review of uncommitted changes:
+Run local review before pushing to catch issues early:
 
 ```bash
-# Install CLI (one-time)
-curl -fsSL https://cli.coderabbit.ai/install.sh | sh
-coderabbit auth login
-
-# Run local review before pushing
+# Review uncommitted changes (token-efficient output for AI)
 coderabbit --prompt-only --type uncommitted
+
+# Review committed changes on current branch
+coderabbit --prompt-only --type committed
 ```
 
-### Commands for Claude Code
+Always use `--prompt-only` — provides concise, token-efficient output optimized for Claude Code.
 
-When implementing features that will be reviewed:
+### PR Monitoring
 
 ```bash
 # After creating PR, wait for CodeRabbit

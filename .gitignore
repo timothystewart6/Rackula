@@ -39,4 +39,4 @@ playwright-browserstack-sdk.config.ts
 .claude/plans/
 
 # Git worktrees
-.worktrees/
+.worktree/

@@ -11,14 +11,14 @@ Designed for autonomous research with checkpointing and file-based output.
 
 You have **explicit permission** to perform WITHOUT asking:
 
-| Action | Scope |
-|--------|-------|
-| Git branches | `spike/<number>-*` |
-| Worktrees | Sibling directories `Rackula-issue-<N>` |
-| Edit files | `docs/research/`, `.claude/spike-*` |
-| Commands | `gh` CLI, `git worktree`, read-only npm |
-| Create issues | Batch from YAML definition file |
-| PRs | `gh pr create` for research docs |
+| Action        | Scope                                   |
+| ------------- | --------------------------------------- |
+| Git branches  | `spike/<number>-*`                      |
+| Worktrees     | Sibling directories `Rackula-issue-<N>` |
+| Edit files    | `docs/research/`, `.claude/spike-*`     |
+| Commands      | `gh` CLI, `git worktree`, read-only npm |
+| Create issues | Batch from YAML definition file         |
+| PRs           | `gh pr create` for research docs        |
 
 **STOP and ask for:** Force push, direct main operations, deleting unrelated files.
 
@@ -59,23 +59,29 @@ START
 **CRITICAL:** These rules prevent context exhaustion.
 
 ### Rule 1: Sequential Agents
+
 Run research agents ONE AT A TIME. Never parallel.
+
 ```
 Agent 1 completes → write file → checkpoint → clear context
 Agent 2 starts fresh with minimal context
 ```
 
 ### Rule 2: File-Based Output
+
 Agents write directly to files. Don't accumulate results in context.
+
 ```
 Research output → docs/research/<N>-<type>.md
 Issue definitions → .claude/spike-<N>-issues.yaml
 ```
 
 ### Rule 3: Incremental Synthesis
+
 Build documents using Edit tool (append sections), not full in-memory synthesis.
 
 ### Rule 4: Checkpoint Everything
+
 Save progress after each phase. Resume is always possible.
 
 ---
@@ -83,6 +89,7 @@ Save progress after each phase. Resume is always possible.
 ## Quick Reference
 
 ### File Structure
+
 ```
 docs/research/
 ├── <N>-codebase.md     # Codebase exploration results
@@ -96,10 +103,11 @@ docs/research/
 ```
 
 ### Checkpoint Format
+
 ```yaml
 spike_number: 237
 spike_title: "Network Interface Visualization"
-phase: research  # setup | research | synthesis | issues | complete
+phase: research # setup | research | synthesis | issues | complete
 completed_agents:
   - codebase
   - external
@@ -112,11 +120,11 @@ blockers: []
 
 ### Memory Search (mem-search skill)
 
-| Purpose | Query |
-|---------|-------|
+| Purpose          | Query                                                     |
+| ---------------- | --------------------------------------------------------- |
 | Prior spike work | `search` with query="#<N> OR <keywords>", type="decision" |
-| Related features | `search` with concepts="<area>" |
-| Past patterns | `search` with type="discovery" |
+| Related features | `search` with concepts="<area>"                           |
+| Past patterns    | `search` with type="discovery"                            |
 
 ---
 
@@ -133,8 +141,8 @@ Check for `spike` label. If not present, STOP.
 ### 1b. Create Worktree (if not already in one)
 
 ```bash
-git worktree add ../Rackula-issue-$ARGUMENTS -b spike/$ARGUMENTS-research
-cd ../Rackula-issue-$ARGUMENTS
+git worktree add .worktree/Rackula-issue-$ARGUMENTS -b spike/$ARGUMENTS-research
+cd .worktree/Rackula-issue-$ARGUMENTS
 ```
 
 ### 1c. Create Research Directory
@@ -146,6 +154,7 @@ mkdir -p docs/research
 ### 1d. Initialize Checkpoint
 
 Write `.claude/spike-$ARGUMENTS-checkpoint.yaml`:
+
 ```yaml
 spike_number: $ARGUMENTS
 spike_title: "<from issue>"
@@ -169,6 +178,7 @@ Load any prior work on this spike or related topics.
 ## Phase 2: Sequential Research
 
 Execute research agents ONE AT A TIME. After each:
+
 1. Verify output file created
 2. Update checkpoint
 3. Proceed to next agent
@@ -176,6 +186,7 @@ Execute research agents ONE AT A TIME. After each:
 ### 2a. Codebase Exploration
 
 **Launch Explore agent with prompt:**
+
 ```
 Research spike #<N>: <title>
 
@@ -205,6 +216,7 @@ Format:
 ```
 
 **After agent completes:**
+
 ```yaml
 # Update checkpoint
 completed_agents:
@@ -216,6 +228,7 @@ research_files:
 ### 2b. External Research
 
 **Launch research agent (with WebSearch/WebFetch if applicable):**
+
 ```
 Research spike #<N>: <title>
 
@@ -245,6 +258,7 @@ Format:
 ```
 
 **After agent completes:**
+
 ```yaml
 # Update checkpoint
 completed_agents:
@@ -258,6 +272,7 @@ research_files:
 ### 2c. Pattern Analysis
 
 **Launch analysis agent:**
+
 ```
 Research spike #<N>: <title>
 
@@ -289,6 +304,7 @@ Format:
 ```
 
 **After agent completes:**
+
 ```yaml
 # Update checkpoint
 phase: research
@@ -311,6 +327,7 @@ research_files:
 ### 3a. Create Main Findings Document
 
 Create `docs/research/spike-<N>-<slug>.md` with initial structure:
+
 ```markdown
 # Spike #<N>: <Title>
 
@@ -320,6 +337,7 @@ Create `docs/research/spike-<N>-<slug>.md` with initial structure:
 ---
 
 ## Executive Summary
+
 <to be filled>
 
 ---
@@ -339,6 +357,7 @@ For each section, READ the relevant research file, then EDIT to append:
 ### 3c. Create Prototypes (if applicable)
 
 If the spike calls for prototypes:
+
 - Create in `docs/research/prototype-<name>.svelte` (or appropriate extension)
 - Keep prototypes minimal and focused
 
@@ -358,6 +377,7 @@ phase: synthesis
 ### 4a. Analyze for Implementation Tasks
 
 Read the synthesized findings and identify:
+
 - Implementation phases
 - Individual tasks per phase
 - Dependencies between tasks
@@ -366,6 +386,7 @@ Read the synthesized findings and identify:
 ### 4b. Write Issue Definitions
 
 Create `.claude/spike-<N>-issues.yaml`:
+
 ```yaml
 # Generated from spike #<N>: <title>
 # Review before batch creation
@@ -401,6 +422,7 @@ issues:
 ### 4c. Review with User (if not autonomous)
 
 If not in autonomous mode, display issue count and ask for confirmation:
+
 ```
 Generated <N> issues from spike findings.
 Review .claude/spike-<N>-issues.yaml before creation? [y/n]
@@ -409,6 +431,7 @@ Review .claude/spike-<N>-issues.yaml before creation? [y/n]
 ### 4d. Batch Create Issues
 
 For each issue in YAML file:
+
 ```bash
 gh issue create \
   --title "<title>" \
@@ -422,6 +445,7 @@ Track created issue numbers in checkpoint.
 ### 4e. Update Parent Epic
 
 If parent epic specified:
+
 ```bash
 gh issue edit <epic> --body "<add child issue links>"
 ```
@@ -481,12 +505,14 @@ gh issue close <N> --comment "Spike complete.
 ### 5c. Cleanup
 
 Delete checkpoint file:
+
 ```bash
 rm .claude/spike-<N>-checkpoint.yaml
 rm .claude/spike-<N>-issues.yaml
 ```
 
 If using worktree, offer to remove:
+
 ```bash
 cd ..
 git worktree remove Rackula-issue-<N>
@@ -522,10 +548,13 @@ Read checkpoint
 ## Error Recovery
 
 ### Context Exhausting
+
 Checkpoint is preserved. Start new session with same command:
+
 ```
 /research-spike <N>
 ```
+
 Will resume from last checkpoint.
 
 ### Agent Failure

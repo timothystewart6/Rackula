@@ -64,8 +64,8 @@ git checkout -b <branch>   # ❌ Creates and switches
 
 ```bash
 # CORRECT: Create isolated worktree with absolute paths
-git worktree add ../Rackula-issue-<N> -b <type>/<N>-<desc>
-WORKTREE_DIR="$(pwd)/../Rackula-issue-<N>"
+git worktree add .worktree/Rackula-issue-<N> -b <type>/<N>-<desc>
+WORKTREE_DIR="$(pwd)/.worktree/Rackula-issue-<N>"
 (cd "$WORKTREE_DIR" && npm install)
 # Use subshells for all worktree commands: (cd "$WORKTREE_DIR" && <command>)
 ```
@@ -86,7 +86,7 @@ You have **explicit permission** to perform WITHOUT asking:
 | Action       | Scope                                                       |
 | ------------ | ----------------------------------------------------------- | ---- | ----- | -------- | ---- | ------------------ |
 | Git branches | `(fix                                                       | feat | chore | refactor | test | docs)/<number>-\*` |
-| Worktrees    | Sibling directories `Rackula-issue-<N>`                     |
+| Worktrees    | Sibling directories `.worktree/Rackula-issue-<N>`           |
 | Edit files   | `src/`, `docs/`, test files                                 |
 | Commands     | `npm test`, `npm run build`, `npm run lint`, `gh` CLI       |
 | Git ops      | add, commit, push (non-main), fetch, pull, worktree         |
@@ -175,8 +175,8 @@ START
 (cd "$WORKTREE_DIR" && npm run test -- src/tests/<File>.test.ts --reporter=verbose)
 
 # Worktrees (always define WORKTREE_DIR after creation)
-git worktree add ../Rackula-issue-<N> -b <type>/<N>-<desc>
-WORKTREE_DIR="$(pwd)/../Rackula-issue-<N>"
+git worktree add .worktree/Rackula-issue-<N> -b <type>/<N>-<desc>
+WORKTREE_DIR="$(pwd)/.worktree/Rackula-issue-<N>"
 git worktree list
 git worktree remove ../Rackula-issue-<N>
 ```
@@ -328,8 +328,8 @@ If not obvious from issue, use Explore agent: "Find files related to <feature/co
 ```bash
 # From main directory - use absolute paths pattern
 git fetch origin main
-git worktree add ../Rackula-issue-<N> -b <type>/<N>-<short-description> origin/main
-WORKTREE_DIR="$(pwd)/../Rackula-issue-<N>"
+git worktree add .worktree/Rackula-issue-<N> -b <type>/<N>-<short-description> origin/main
+WORKTREE_DIR="$(pwd)/.worktree/Rackula-issue-<N>"
 (cd "$WORKTREE_DIR" && npm install)
 ```
 
@@ -396,7 +396,7 @@ gh pr merge --squash --delete-branch --auto
    ```bash
    cd /path/to/Rackula  # main directory
    git pull origin main
-   git worktree remove ../Rackula-issue-<N>
+   git worktree remove .worktree/Rackula-issue-<N>
    git worktree prune
    ```
 

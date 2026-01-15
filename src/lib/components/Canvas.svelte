@@ -134,6 +134,25 @@
   const racks = $derived(layoutStore.racks);
   const activeRackId = $derived(layoutStore.activeRackId);
   const hasRacks = $derived(layoutStore.rackCount > 0);
+  const rackGroups = $derived(layoutStore.rack_groups);
+
+  // Organize racks: grouped racks in their groups, then ungrouped racks
+  const organizedRacks = $derived.by(() => {
+    const groupedRackIds = new Set(rackGroups.flatMap((g) => g.rack_ids));
+    const ungroupedRacks = racks.filter((r) => !groupedRackIds.has(r.id));
+
+    // Build group entries with their racks
+    const groupEntries = rackGroups
+      .map((group) => ({
+        group,
+        racks: group.rack_ids
+          .map((id) => racks.find((r) => r.id === id))
+          .filter((r): r is (typeof racks)[0] => r !== undefined),
+      }))
+      .filter((entry) => entry.racks.length > 0);
+
+    return { groupEntries, ungroupedRacks };
+  });
 
   // Panzoom container reference
   let panzoomContainer: HTMLDivElement | null = $state(null);
@@ -365,9 +384,59 @@
     {/if}
     {#if hasRacks}
       <div class="panzoom-container" bind:this={panzoomContainer}>
-        <!-- Multi-rack mode: render all racks with active selection indicator -->
+        <!-- Multi-rack mode: render racks with visual grouping -->
         <div class="racks-wrapper">
-          {#each racks as rack (rack.id)}
+          <!-- Render grouped racks with group labels -->
+          {#each organizedRacks.groupEntries as { group, racks: groupRacks } (group.id)}
+            <div
+              class="rack-group"
+              class:bayed={group.layout_preset === "bayed"}
+            >
+              <div class="group-label">{group.name ?? "Group"}</div>
+              <div class="group-racks">
+                {#each groupRacks as rack (rack.id)}
+                  {@const isActive = rack.id === activeRackId}
+                  {@const isSelected =
+                    selectionStore.selectedType === "rack" &&
+                    selectionStore.selectedRackId === rack.id}
+                  <div class="rack-wrapper" class:active={isActive}>
+                    <RackDualView
+                      {rack}
+                      deviceLibrary={layoutStore.device_types}
+                      selected={isSelected}
+                      {isActive}
+                      selectedDeviceId={selectionStore.selectedType ===
+                        "device" && selectionStore.selectedRackId === rack.id
+                        ? selectionStore.selectedDeviceId
+                        : null}
+                      displayMode={uiStore.displayMode}
+                      showLabelsOnImages={uiStore.showLabelsOnImages}
+                      showAnnotations={uiStore.showAnnotations}
+                      annotationField={uiStore.annotationField}
+                      showBanana={uiStore.showBanana}
+                      {partyMode}
+                      {enableLongPress}
+                      onselect={(e) => handleRackSelect(e)}
+                      ondeviceselect={(e) => handleDeviceSelect(rack.id, e)}
+                      ondevicedrop={(e) => handleDeviceDrop(e)}
+                      ondevicemove={(e) => handleDeviceMove(e)}
+                      ondevicemoverack={(e) => handleDeviceMoveRack(e)}
+                      onplacementtap={(e) => handlePlacementTap(rack.id, e)}
+                      onlongpress={(e) => onracklongpress?.(e)}
+                      onadddevice={() => onrackadddevice?.(rack.id)}
+                      onedit={() => onrackedit?.(rack.id)}
+                      onrename={() => onrackrename?.(rack.id)}
+                      onduplicate={() => onrackduplicate?.(rack.id)}
+                      ondelete={() => onrackdelete?.(rack.id)}
+                    />
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/each}
+
+          <!-- Render ungrouped racks -->
+          {#each organizedRacks.ungroupedRacks as rack (rack.id)}
             {@const isActive = rack.id === activeRackId}
             {@const isSelected =
               selectionStore.selectedType === "rack" &&
@@ -453,6 +522,48 @@
   .rack-wrapper.active {
     /* Active rack visual indicator - accent outline */
     box-shadow: 0 0 0 3px var(--colour-selection);
+  }
+
+  /* Rack group visual container */
+  .rack-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border: 2px dashed var(--colour-border);
+    border-radius: var(--radius-lg);
+    background: var(--colour-surface-overlay, rgba(40, 42, 54, 0.3));
+  }
+
+  .rack-group.bayed {
+    /* Bayed groups have a tighter visual appearance */
+    border-style: solid;
+    border-color: var(--colour-selection);
+    background: var(--colour-surface-overlay, rgba(139, 233, 253, 0.05));
+  }
+
+  .group-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--colour-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 var(--space-1);
+  }
+
+  .rack-group.bayed .group-label {
+    color: var(--colour-selection);
+  }
+
+  .group-racks {
+    display: flex;
+    flex-direction: row;
+    gap: var(--space-4);
+  }
+
+  .rack-group.bayed .group-racks {
+    /* Bayed racks are closer together - side-by-side appearance */
+    gap: var(--space-2);
   }
 
   /* Party mode: animated gradient background */

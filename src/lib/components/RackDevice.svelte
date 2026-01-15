@@ -11,6 +11,7 @@
     SlotPosition,
   } from "$lib/types";
   import PortIndicators from "./PortIndicators.svelte";
+  import ContainerSlots from "./ContainerSlots.svelte";
   import {
     createRackDeviceDragData,
     setCurrentDragData,
@@ -53,6 +54,12 @@
     colourOverride?: string;
     /** Slot position for half-width devices */
     slotPosition?: SlotPosition;
+    /** Container context for child devices (for accessibility announcements) */
+    containerContext?: {
+      containerName: string;
+      containerPosition: number;
+      slotName: string;
+    };
     onselect?: (event: CustomEvent<{ slug: string; position: number }>) => void;
     ondragstart?: (
       event: CustomEvent<{ rackId: string; deviceIndex: number }>,
@@ -89,6 +96,7 @@
     placedDeviceId,
     colourOverride,
     slotPosition = "full",
+    containerContext,
     onselect,
     ondragstart: ondragstartProp,
     ondragend: ondragendProp,
@@ -206,12 +214,25 @@
   // Unique clipPath ID for this device instance
   const clipId = $derived(`clip-${device.slug}-${position}`);
 
-  // Aria label for accessibility
-  const ariaLabel = $derived(
-    `${deviceName}, ${device.u_height}U ${device.category} at U${position}${selected ? ", selected" : ""}`,
+  // Detect if this device is a container (has slots)
+  const isContainer = $derived(
+    Array.isArray(device.slots) && device.slots.length > 0,
   );
 
-  // Handle keyboard activation (Enter/Space to select)
+  // Aria label for accessibility - includes container hierarchy for child devices
+  const ariaLabel = $derived.by(() => {
+    const base = `${deviceName}, ${device.u_height}U ${device.category}`;
+
+    if (containerContext) {
+      // Child device: announce hierarchy per Epic #159
+      return `${base} in ${containerContext.slotName} of ${containerContext.containerName} at U${containerContext.containerPosition}${selected ? ", selected" : ""}`;
+    }
+
+    // Rack-level device: standard announcement
+    return `${base} at U${position}${selected ? ", selected" : ""}`;
+  });
+
+  // Handle keyboard activation (Enter/Space to select, Tab to enter container)
   function handleKeyDown(event: KeyboardEvent) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -219,6 +240,17 @@
       onselect?.(
         new CustomEvent("select", { detail: { slug: device.slug, position } }),
       );
+    }
+
+    // Tab into container slots when container is selected
+    if (event.key === "Tab" && !event.shiftKey && isContainer && selected) {
+      // Focus first slot within this device group
+      const firstSlot = groupElement?.querySelector("[data-slot-id]");
+      if (firstSlot instanceof SVGElement) {
+        // Only prevent default if we found a focusable slot to avoid keyboard trap
+        event.preventDefault();
+        (firstSlot as unknown as HTMLElement).focus();
+      }
     }
   }
 
@@ -522,6 +554,16 @@
       {deviceHeight}
       {rackView}
       {onPortClick}
+    />
+  {/if}
+
+  <!-- Container slot grid (shown when selected container) -->
+  {#if isContainer && selected}
+    <ContainerSlots
+      containerType={device}
+      containerWidth={deviceWidth}
+      containerHeight={deviceHeight}
+      selectedSlotId={null}
     />
   {/if}
 </g>

@@ -4,7 +4,12 @@
   Accepts device drops for placement
 -->
 <script lang="ts">
-  import type { Rack as RackType, DeviceType, DisplayMode } from "$lib/types";
+  import type {
+    Rack as RackType,
+    DeviceType,
+    DisplayMode,
+    PlacedDevice,
+  } from "$lib/types";
   import RackDevice from "./RackDevice.svelte";
   import DeviceContextMenu from "./DeviceContextMenu.svelte";
   import {
@@ -12,6 +17,7 @@
     calculateDropPosition,
     getDropFeedback,
     getCurrentDragData,
+    detectContainerDropTarget,
     type DropFeedback,
   } from "$lib/utils/dragdrop";
   import { findCollisions } from "$lib/utils/collision";
@@ -123,6 +129,30 @@
   // Look up device by device_type (slug)
   function getDeviceBySlug(slug: string): DeviceType | undefined {
     return deviceLibrary.find((d) => d.slug === slug);
+  }
+
+  /**
+   * Get container context for child devices (for accessibility announcements)
+   * Returns undefined if the device is not a child of a container.
+   */
+  function getContainerContext(childDevice: PlacedDevice) {
+    if (!childDevice.container_id) return undefined;
+
+    const container = rack.devices.find(
+      (d) => d.id === childDevice.container_id,
+    );
+    if (!container) return undefined;
+
+    const containerType = getDeviceBySlug(container.device_type);
+    if (!containerType) return undefined;
+
+    const slot = containerType.slots?.find((s) => s.id === childDevice.slot_id);
+
+    return {
+      containerName: containerType.model ?? containerType.slug,
+      containerPosition: container.position,
+      slotName: slot?.name ?? childDevice.slot_id ?? "Unknown",
+    };
   }
 
   // CSS custom property values (fallbacks match app.css)
@@ -712,6 +742,46 @@
       RACK_PADDING,
     );
 
+    // Check for container slot drop (requires container to be selected)
+    // Calculate x offset within rack interior for slot detection
+    const xOffsetInRack = svgCoords.x - RAIL_WIDTH;
+
+    const containerTarget = detectContainerDropTarget(
+      rack,
+      layoutStore.device_types,
+      targetU,
+      xOffsetInRack,
+      RACK_WIDTH,
+      selectedDeviceId,
+    );
+
+    if (containerTarget) {
+      // Drop into container slot
+      const success = layoutStore.placeInContainer(
+        rack.id,
+        dragData.device.slug,
+        containerTarget.containerId,
+        containerTarget.slotId,
+        containerTarget.position,
+      );
+
+      if (success) {
+        // Handle source cleanup for rack-device moves
+        if (
+          dragData.type === "rack-device" &&
+          dragData.sourceRackId &&
+          dragData.sourceIndex !== undefined
+        ) {
+          layoutStore.removeDeviceFromRack(
+            dragData.sourceRackId,
+            dragData.sourceIndex,
+          );
+        }
+        return;
+      }
+      // If container placement failed, fall through to rack-level placement
+    }
+
     // For internal moves, exclude the source device from collision checks
     // Cross-rack and palette drops don't need exclusion
     const excludeIndex = isInternalMove ? dragData.sourceIndex : undefined;
@@ -1117,6 +1187,9 @@
     <g transform="translate(0, {RACK_PADDING + RAIL_WIDTH})">
       {#each visibleDevices as { placedDevice, originalIndex } (placedDevice.device_type + "-" + placedDevice.position)}
         {@const device = getDeviceBySlug(placedDevice.device_type)}
+        {@const containerCtx = placedDevice.container_id
+          ? getContainerContext(placedDevice)
+          : undefined}
         {#if device}
           <RackDevice
             {device}
@@ -1134,6 +1207,7 @@
             placedDeviceId={placedDevice.id}
             colourOverride={placedDevice.colour_override}
             slotPosition={placedDevice.slot_position}
+            containerContext={containerCtx}
             onselect={ondeviceselect}
             ondragstart={() => handleDeviceDragStart(originalIndex)}
             ondragend={handleDeviceDragEnd}

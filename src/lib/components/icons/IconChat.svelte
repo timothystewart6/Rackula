@@ -1,5 +1,5 @@
 <!--
-  Copy/Clipboard icon using Iconoir via Iconify
+  Chat/Discussion icon using Iconoir via Iconify
   Part of #608 icon standardization
 
   Sizing: Uses --icon-size-md (20px) by default.
@@ -12,10 +12,10 @@
   import Icon from "@iconify/svelte";
 </script>
 
-<Icon icon="iconoir:copy" class="icon-copy" aria-hidden="true" />
+<Icon icon="iconoir:message-text" class="icon-chat" aria-hidden="true" />
 
 <style>
-  :global(.icon-copy) {
+  :global(.icon-chat) {
     width: var(--icon-size-md, 20px);
     height: var(--icon-size-md, 20px);
   }

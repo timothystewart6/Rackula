@@ -152,6 +152,7 @@ jobs:
 
       - name: Update badges on main
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        continue-on-error: true  # Branch protection may block direct pushes
         run: |
           # Check if badge JSON was generated
           if [ -d "docs/badges" ]; then

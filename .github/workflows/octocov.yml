@@ -31,7 +31,7 @@ jobs:
         run: npm run test:run -- --coverage || true
 
       - name: Run octocov
-        uses: k1LoW/octocov-action@v1
+        uses: k1LoW/octocov-action@98b913772e0216831bbb756274ea6a3a97e1de96 # v1
         # Continue even if acceptable thresholds aren't met - we want visibility, not enforcement
         continue-on-error: true
         env:

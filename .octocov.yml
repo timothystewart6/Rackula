@@ -36,6 +36,12 @@ comment:
   hideFooterLink: false
   deletePrevious: true
   if: is_pull_request
+  message: |
+    🧛 *"Ah, ah, ah! I love to count!"*
+
+    One coverage percentage! Two code-to-test ratio! Three execution time! Ah ah ah!
+
+    Remember: The Count counts *quality*, not just quantity. Tests should catch bugs, not just exist.
 
 # Summary for GitHub Actions Job Summary
 summary:

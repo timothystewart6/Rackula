@@ -1,4 +1,4 @@
-name: Code Metrics
+name: The Count's Code Census
 
 on:
   push:
@@ -12,7 +12,8 @@ permissions:
   actions: read
 
 jobs:
-  metrics:
+  count:
+    name: "🧛 Ah Ah Ah!"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,6 +37,45 @@ jobs:
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: The Count's Commentary
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Parse coverage percentage from the coverage summary
+          if [ -f "coverage/coverage-summary.json" ]; then
+            COVERAGE=$(jq -r '.total.lines.pct' coverage/coverage-summary.json 2>/dev/null || echo "0")
+          else
+            # Fallback: parse from lcov.info
+            COVERAGE=$(awk -F: '/^LF:/{total+=$2} /^LH:/{hit+=$2} END{if(total>0) printf "%.1f", hit/total*100; else print "0"}' coverage/lcov.info 2>/dev/null || echo "0")
+          fi
+
+          # Round to integer for comparison
+          COV_INT=${COVERAGE%.*}
+
+          # The Count has opinions based on coverage level
+          if [ "$COV_INT" -ge 80 ]; then
+            QUOTE="*\"$COVERAGE percent! That is a WONDERFUL number to count! $COVERAGE! Ah ah ah!\"* 🦇"
+            MOOD="is DELIGHTED"
+          elif [ "$COV_INT" -ge 60 ]; then
+            QUOTE="*\"$COVERAGE percent... Yes, yes, I can count this. $COVERAGE is... acceptable. Ah ah ah.\"* 🦇"
+            MOOD="is satisfied"
+          elif [ "$COV_INT" -ge 40 ]; then
+            QUOTE="*\"$COVERAGE percent? That is not very many things to count. The Count is... disappointed. Ah ah ah.\"* 🌙"
+            MOOD="is concerned"
+          else
+            QUOTE="*\"$COVERAGE percent?! The Count does not get out of his coffin for less than 40 percent! Ah ah ah!\"* ⚰️"
+            MOOD="is VERY disappointed"
+          fi
+
+          # Post The Count's reaction
+          gh pr comment ${{ github.event.pull_request.number }} --body "## 🧛 The Count $MOOD
+
+          $QUOTE
+
+          ---
+          <sub>*One coverage report! Ah ah ah!*</sub>"
 
       - name: Apply brand colors to badges
         run: |

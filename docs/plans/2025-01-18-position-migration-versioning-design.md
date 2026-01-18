@@ -1,12 +1,12 @@
 # Position Migration & Versioning Design
 
-**Date:** 2025-01-18
-**Status:** Approved
+**Date:** 2025-01-18 (Updated: 2026-01-18)
+**Status:** Approved (Revised)
 **Related Issues:** #634, #753
 
 ## Problem
 
-Rackula 0.7.0 introduces internal position units (1/6U precision). Old layouts store positions as U values (1, 2, 42), new layouts store them as internal units (6, 12, 252).
+Rackula 0.7.0 introduces internal position units (1/3U precision, matching the 3 holes per rack unit). Old layouts store positions as U values (1, 2, 42), new layouts store them as internal units (3, 6, 126).
 
 When loading a file, we must detect whether it uses the old or new format and migrate if necessary.
 
@@ -26,7 +26,7 @@ No separate schema version. Single source of truth from package.json.
 Two checks, either triggers migration:
 
 1. **Version check:** `version < "0.7.0"` → old format
-2. **Heuristic fallback:** Any rack-level device with `position < 6` → old format
+2. **Heuristic fallback:** Any rack-level device with `position >= 1 && position < UNITS_PER_U` → old format
 
 The heuristic catches edge cases where version might be missing or incorrect.
 
@@ -43,7 +43,7 @@ Keep it simple. The migration logic documents the threshold inline:
 
 ```typescript
 // Layouts saved before 0.7.0 use U values (1, 2, 42)
-// Layouts saved with 0.7.0+ use internal units (6, 12, 252)
+// Layouts saved with 0.7.0+ use internal units (3, 6, 126)
 if (compareVersions(version, "0.7.0") < 0) {
   return true; // needs migration
 }
@@ -54,7 +54,7 @@ if (compareVersions(version, "0.7.0") < 0) {
 ### Files to Change
 
 1. **package.json** - Bump version to `0.7.0-dev`
-2. **src/lib/types/constants.ts** - Remove `CURRENT_VERSION`, `INTERNAL_UNITS_VERSION`
+2. **src/lib/types/constants.ts** - Update `UNITS_PER_U` to 3
 3. **src/lib/utils/serialization.ts** - Use `VERSION` from package.json
 4. **src/lib/schemas/index.ts** - Update migration logic with dual checks
 
@@ -72,10 +72,13 @@ function needsPositionMigration(
   }
 
   // Check 2: Heuristic fallback
-  // If any rack-level device has position < 6, it's old format
-  // (U1 in new format = 6, so position < 6 means old format)
+  // If any rack-level device has position >= 1 and < UNITS_PER_U, it's old format
+  // (U1 in new format = 3, so position 1 or 2 means old format)
   const hasOldFormatPosition = devices.some(
-    (d) => d.container_id === undefined && d.position < 6 && d.position >= 1,
+    (d) =>
+      d.container_id === undefined &&
+      d.position >= 1 &&
+      d.position < UNITS_PER_U,
   );
   if (hasOldFormatPosition) {
     return true;
@@ -97,7 +100,7 @@ function needsPositionMigration(
 ### E2E Test
 
 - Sample old-format YAML file in test fixtures
-- Load file → verify positions migrated correctly
+- Load file → verify positions migrated correctly (multiplied by 3)
 - Save file → verify version is current app version
 - Reload → verify no double migration
 
@@ -128,3 +131,8 @@ function compareVersions(a: string, b: string): number {
 ```
 
 Note: `0.7.0-dev` compares as `0.7.0` (pre-release suffix ignored for simplicity).
+
+## Revision History
+
+- **2025-01-18:** Original design with 1/6U internal units
+- **2026-01-18:** Updated to 1/3U internal units after realizing 1/6U doesn't map to physical reality (racks have 3 holes per U, not 6)

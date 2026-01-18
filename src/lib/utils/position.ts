@@ -1,17 +1,19 @@
 /**
  * Position Conversion Utilities
  *
- * Internal positions are stored as multiples of 1/6U for precision.
- * This supports both 1/2U devices (3 internal units) and 1/3U hole-aligned
- * positioning (2 internal units) without floating-point precision issues.
+ * Internal units use UNITS_PER_U = 6 (LCM of 2 and 3) for integer math:
+ * - Hole positions: 1/3U = 2 internal units (racks have 3 holes per U)
+ * - Device heights: 1/2U = 3 internal units (smallest device is 0.5U)
+ *
+ * This avoids floating-point precision issues in collision detection.
  *
  * Position mapping:
- * | Human | Internal |
- * |-------|----------|
- * | U1    | 6        |
- * | U1⅓   | 8        |
- * | U1½   | 9        |
- * | U2    | 12       |
+ * | Human | Internal | Notes                    |
+ * |-------|----------|--------------------------|
+ * | U1    | 6        | Standard position        |
+ * | U1⅓   | 8        | Offset by one hole       |
+ * | U1½   | 9        | Half-U device boundary   |
+ * | U2    | 12       | Standard position        |
  */
 
 import { UNITS_PER_U } from "$lib/types/constants";

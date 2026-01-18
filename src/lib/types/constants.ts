@@ -53,7 +53,9 @@ export const ALL_CATEGORIES: readonly DeviceCategory[] = [
 /**
  * Common rack heights for quick selection
  */
-export const COMMON_RACK_HEIGHTS: readonly number[] = [12, 18, 24, 42, 48] as const;
+export const COMMON_RACK_HEIGHTS: readonly number[] = [
+  12, 18, 24, 42, 48,
+] as const;
 
 /**
  * Rack height constraints
@@ -69,8 +71,13 @@ export const MAX_DEVICE_HEIGHT = 42;
 
 /**
  * Number of internal units per rack unit (1U).
- * Positions are stored as multiples of 1/6U for precision.
- * 6 is the LCM of 2 and 3, supporting both 1/2U and 1/3U increments.
+ *
+ * Why 6? It's the LCM of 2 and 3, enabling integer math for:
+ * - Hole positions (1/3U = 2 internal units) — racks have 3 holes per U
+ * - Device heights (1/2U = 3 internal units) — smallest device is 0.5U
+ *
+ * This avoids floating-point precision issues in collision detection.
+ * The "1/6U" granularity is an implementation detail, not a user-facing concept.
  */
 export const UNITS_PER_U = 6;
 

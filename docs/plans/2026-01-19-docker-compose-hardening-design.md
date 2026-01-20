@@ -36,19 +36,22 @@ This official nginx image runs as UID 101 (non-root) from startup, eliminating t
 - Drop ALL capabilities (no CHOWN/SETGID/SETUID needed)
 - Smaller attack surface
 - Maintained upstream by nginx team
+- Supports arm64 for Raspberry Pi self-hosters
 
 Requires nginx to listen on port 8080 internally (unprivileged port).
 
 ### Healthcheck: Dockerfile Only
 
-The Dockerfile has a healthcheck using `/health` endpoint (defined in nginx.conf). Updated for port 8080:
+The Dockerfile has a healthcheck using `/health` endpoint (defined in nginx.conf). Uses busybox wget which is built into Alpine:
 
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://127.0.0.1:8080/health || exit 1
+  CMD wget -q --spider http://127.0.0.1:8080/health || exit 1
 ```
 
 **Decision:** Keep healthcheck in Dockerfile only. This makes the image portable across docker run, compose, and orchestrators without duplication.
+
+**Note:** Using busybox wget (built-in) rather than standalone wget package to avoid adding attack surface.
 
 ### Resource Limits: Based on Observed Usage
 
@@ -64,6 +67,8 @@ Production runs behind Cloudflare which caches and absorbs traffic. Self-hosters
 - Memory: 128M limit, 16M reservation
 - CPU: 0.50 limit, 0.10 reservation
 
+Fixed limits (not configurable via .env) to keep configuration simple.
+
 ### Security Hardening
 
 With non-root nginx, we can lock down maximally:
@@ -76,6 +81,8 @@ With non-root nginx, we can lock down maximally:
 | `tmpfs` mounts      | Writable space for nginx cache/pid without disk |
 
 **Note:** No `cap_add` needed with nginx-unprivileged.
+
+**tmpfs mounts:** Keep all three (`/var/cache/nginx`, `/var/run`, `/tmp`) for safety even though nginx-unprivileged uses `/tmp` for most things.
 
 **Future consideration:** When adding persistent storage (docker volume), it will be writable despite `read_only: true` since volumes mount after the flag applies.
 
@@ -93,7 +100,17 @@ logging:
 
 ### Port Convention
 
-**Decision:** Default port 8197 (embeds 1897, the year Dracula was published, while staying in the familiar 8xxx web port range). Configurable via `RACKULA_PORT` env var.
+**Decision:** Keep default port 8080 for backwards compatibility with existing deployments.
+
+Configurable via `RACKULA_PORT` env var. Document 8197 (embeds 1897, the year Dracula was published) as a fun alternative in `.env.example`.
+
+### Graceful Shutdown
+
+**Decision:** Add explicit `stop_grace_period: 10s` to document intent (matches Docker default).
+
+### IPv6 Support
+
+**Decision:** Add `listen [::]:8080;` to nginx.conf for dual-stack IPv4/IPv6 support.
 
 ### OCI Labels
 
@@ -105,6 +122,12 @@ LABEL org.opencontainers.image.description="Rack Layout Designer for Homelabbers
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.title="Rackula"
 ```
+
+### Compose Version Requirement
+
+**Decision:** Require Docker Compose v2 (the Go-based `docker compose` command). The `deploy.resources` syntax doesn't work with legacy docker-compose v1.
+
+Docker Compose v1 was deprecated in June 2023. Document this requirement in README.
 
 ## Final Design
 
@@ -118,10 +141,11 @@ services:
     # build: ./deploy
     container_name: rackula
     ports:
-      - "${RACKULA_PORT:-8197}:8080"
+      - "${RACKULA_PORT:-8080}:8080"
     restart: unless-stopped
+    stop_grace_period: 10s
 
-    # Resource limits
+    # Resource limits (requires Docker Compose v2)
     deploy:
       resources:
         limits:
@@ -187,19 +211,20 @@ LABEL org.opencontainers.image.title="Rackula"
 COPY ./deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Health check (port 8080 for unprivileged nginx)
+# Health check (port 8080 for unprivileged nginx, busybox wget is built-in)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://127.0.0.1:8080/health || exit 1
+  CMD wget -q --spider http://127.0.0.1:8080/health || exit 1
 
 EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-### nginx.conf (port change only)
+### nginx.conf changes
 
 ```nginx
 server {
-    listen 8080;  # Changed from 80 for non-root nginx
+    listen 8080;       # Changed from 80 for non-root nginx
+    listen [::]:8080;  # Added IPv6 support
     # ... rest unchanged
 }
 ```
@@ -207,30 +232,49 @@ server {
 ### .env.example
 
 ```bash
-# Port to expose Rackula on (default: 8197, a nod to Dracula's 1897 publication)
-RACKULA_PORT=8197
+# Port to expose Rackula on (default: 8080)
+# Fun alternative: 8197 (embeds 1897, the year Dracula was published)
+RACKULA_PORT=8080
 ```
 
 ## Changes Summary
 
-| Aspect          | Before              | After                                |
-| --------------- | ------------------- | ------------------------------------ |
-| Base image      | `nginx:alpine`      | `nginxinc/nginx-unprivileged:alpine` |
-| Container user  | root (master)       | UID 101 (non-root)                   |
-| Internal port   | 80                  | 8080                                 |
-| Service name    | `Rackula`           | `rackula` (lowercase convention)     |
-| Container name  | (auto-generated)    | `rackula`                            |
-| Default port    | 8080                | 8197                                 |
-| Port config     | Hardcoded           | Env var with default                 |
-| Resource limits | None                | 128M/0.5 CPU                         |
-| Capabilities    | Default (many)      | None (drop ALL)                      |
-| Filesystem      | Read-write          | Read-only + tmpfs                    |
-| Logging         | Default (unlimited) | 30MB rotated                         |
-| OCI labels      | None                | Source, description, license, title  |
+| Aspect            | Before              | After                                |
+| ----------------- | ------------------- | ------------------------------------ |
+| Base image        | `nginx:alpine`      | `nginxinc/nginx-unprivileged:alpine` |
+| Container user    | root (master)       | UID 101 (non-root)                   |
+| Internal port     | 80                  | 8080                                 |
+| IPv6              | No                  | Yes                                  |
+| Service name      | `Rackula`           | `rackula` (lowercase convention)     |
+| Container name    | (auto-generated)    | `rackula`                            |
+| Default port      | 8080                | 8080 (unchanged, backwards compat)   |
+| Port config       | Hardcoded           | Env var with default                 |
+| Resource limits   | None                | 128M/0.5 CPU                         |
+| Capabilities      | Default (many)      | None (drop ALL)                      |
+| Filesystem        | Read-write          | Read-only + tmpfs                    |
+| Logging           | Default (unlimited) | 30MB rotated                         |
+| OCI labels        | None                | Source, description, license, title  |
+| Graceful shutdown | Default             | Explicit 10s                         |
 
 ## Implementation Notes
 
-- Requires `docker compose` (v2), not legacy `docker-compose`
-- VPS deployment scripts may need port updates (8080 → 8197, internal 80 → 8080)
-- Create `.env.example` for documentation
-- Test container startup and healthcheck after changes
+- **Requires Docker Compose v2** (not legacy docker-compose v1)
+- VPS deployment: reverse proxy config needs update to proxy to port 8080 instead of 80
+- File ownership: Build stage files are root-owned but readable by nginx user (644/755 perms)
+- pid file: nginx-unprivileged handles this automatically (uses /tmp/nginx.pid)
+- ARM64/Raspberry Pi: Fully supported by nginx-unprivileged image
+
+## Critical Review Findings
+
+Two rounds of critical review identified and resolved:
+
+1. **wget availability** - Use busybox wget (built-in) not standalone package
+2. **pid file location** - nginx-unprivileged handles it; we only replace conf.d/ not main nginx.conf
+3. **Breaking port change** - Keep 8080 default for backwards compatibility
+4. **VPS reverse proxy** - Document need to update proxy config (separate deployment task)
+5. **tmpfs mounts** - Keep all three for safety
+6. **Graceful shutdown** - Add explicit stop_grace_period
+7. **docker-compose v1** - Drop support, require v2
+8. **IPv6** - Add dual-stack support
+9. **Resource configurability** - Keep fixed for simplicity
+10. **ARM64 support** - Confirmed supported

@@ -16,19 +16,27 @@ const UUID_PATTERN =
  * Part of the data directory refactor (#570, #915).
  * This is the new `metadata:` section in YAML files.
  */
-export const LayoutYamlMetadataSchema = z.object({
-  /** UUID - stable identity across renames/moves */
-  id: z.string().regex(UUID_PATTERN, "Invalid UUID format"),
-  /** Human-readable layout name */
-  name: z.string().min(1, "Metadata name is required"),
-  /** Format version for future migrations (e.g., "1.0") */
-  schema_version: z.string().min(1, "Schema version is required"),
-  /** Optional notes about the layout */
-  description: z
-    .string()
-    .max(1000, "Description must be 1000 characters or less")
-    .optional(),
-});
+export const LayoutYamlMetadataSchema = z
+  .object({
+    /** UUID - stable identity across renames/moves */
+    id: z
+      .string()
+      .min(1, "Metadata ID is required")
+      .regex(UUID_PATTERN, "Metadata ID must be a valid UUID format"),
+    /** Human-readable layout name */
+    name: z
+      .string()
+      .min(1, "Metadata name is required")
+      .max(100, "Metadata name must be 100 characters or less"),
+    /** Format version for future migrations (e.g., "1.0") */
+    schema_version: z.string().min(1, "Schema version is required"),
+    /** Optional notes about the layout */
+    description: z
+      .string()
+      .max(1000, "Description must be 1000 characters or less")
+      .optional(),
+  })
+  .passthrough();
 
 // Minimal schema for extracting layout info (we don't need full validation here)
 // The full schema validation happens in the SPA
@@ -48,8 +56,9 @@ export const LayoutFileSchema = z.object({
 });
 
 /**
- * @deprecated Use LayoutFileSchema instead
- * Kept for backwards compatibility during transition
+ * @deprecated Use LayoutYamlMetadataSchema for metadata-only validation,
+ * or LayoutFileSchema for full layout file validation.
+ * This alias exists for backwards compatibility with code that parses whole layout files.
  */
 export const LayoutMetadataSchema = LayoutFileSchema;
 
@@ -76,6 +85,6 @@ export const LayoutListItemSchema = z.object({
 
 export type LayoutYamlMetadata = z.infer<typeof LayoutYamlMetadataSchema>;
 export type LayoutFile = z.infer<typeof LayoutFileSchema>;
-/** @deprecated Use LayoutFile instead */
+/** @deprecated Use LayoutYamlMetadata for metadata-only types, or LayoutFile for full layout file types */
 export type LayoutMetadata = z.infer<typeof LayoutMetadataSchema>;
 export type LayoutListItem = z.infer<typeof LayoutListItemSchema>;

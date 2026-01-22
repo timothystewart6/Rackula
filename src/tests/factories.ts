@@ -367,7 +367,10 @@ export function setupStoreWithDevice() {
  * Use this when tests need a rack but don't need pre-placed devices.
  * Returns the store and rack for test assertions.
  */
-export function setupStoreWithRack(height: number = 42) {
+export function setupStoreWithRack(height: number = 42): {
+  store: ReturnType<typeof getLayoutStore>;
+  rack: Rack & { id: string };
+} {
   const store = getLayoutStore();
   if (!store) {
     throw new Error("setupStoreWithRack: getLayoutStore() returned null");

@@ -56,7 +56,6 @@ describe("sidebarWidth", () => {
         .localStorage;
       try {
         // Simulate environments where localStorage is not defined
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete (globalThis as { localStorage?: Storage }).localStorage;
         expect(loadSidebarWidthFromStorage()).toBe(null);
       } finally {

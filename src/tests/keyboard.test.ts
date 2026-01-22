@@ -14,6 +14,7 @@ import {
 import { getUIStore, resetUIStore } from "$lib/stores/ui.svelte";
 import { CATEGORY_COLOURS } from "$lib/types/constants";
 import { UNITS_PER_U, toInternalUnits } from "$lib/utils/position";
+import { setupStoreWithRack } from "./factories";
 
 describe("Keyboard Utilities", () => {
   describe("shouldIgnoreKeyboard", () => {
@@ -310,40 +311,35 @@ describe("KeyboardHandler Component", () => {
       expect(onExport).toHaveBeenCalledTimes(1);
     });
 
-    // Note: Duplicate rack tests updated for single-rack mode (v0.1.1)
-    // In single-rack mode, duplicating is blocked - test verifies no duplicate created
-    it("Ctrl+D does not duplicate in single-rack mode", async () => {
-      const layoutStore = getLayoutStore();
+    // Ctrl/Cmd+D duplicates selected rack (multi-rack mode since v0.6.0)
+    it("Ctrl+D duplicates selected rack", async () => {
+      const { store: layoutStore, rack } = setupStoreWithRack();
       const selectionStore = getSelectionStore();
 
-      // Use default rack from store reset
-      const rack = layoutStore.rack;
-      selectionStore.selectRack(rack!.id);
+      selectionStore.selectRack(rack.id);
       const initialCount = layoutStore.rackCount;
 
       render(KeyboardHandler);
 
       await fireEvent.keyDown(window, { key: "d", ctrlKey: true });
 
-      // Single-rack mode: duplicate is blocked, count unchanged
-      expect(layoutStore.rackCount).toBe(initialCount);
+      // Rack should be duplicated
+      expect(layoutStore.rackCount).toBe(initialCount + 1);
     });
 
-    it("Cmd+D does not duplicate in single-rack mode (Mac)", async () => {
-      const layoutStore = getLayoutStore();
+    it("Cmd+D duplicates selected rack (Mac)", async () => {
+      const { store: layoutStore, rack } = setupStoreWithRack();
       const selectionStore = getSelectionStore();
 
-      // Use default rack from store reset
-      const rack = layoutStore.rack;
-      selectionStore.selectRack(rack!.id);
+      selectionStore.selectRack(rack.id);
       const initialCount = layoutStore.rackCount;
 
       render(KeyboardHandler);
 
       await fireEvent.keyDown(window, { key: "d", metaKey: true });
 
-      // Single-rack mode: duplicate is blocked, count unchanged
-      expect(layoutStore.rackCount).toBe(initialCount);
+      // Rack should be duplicated
+      expect(layoutStore.rackCount).toBe(initialCount + 1);
     });
   });
 

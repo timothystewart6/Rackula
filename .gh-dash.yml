@@ -35,6 +35,8 @@ prSections:
     filters: "is:open"
 
 issuesSections:
+  - title: "All Open"
+    filters: "is:open"
   - title: "Ready"
     filters: "is:open label:ready"
   - title: "In Progress"

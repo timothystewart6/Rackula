@@ -14,33 +14,12 @@ export function createLayout(name: string = "Racky McRackface"): Layout {
   return {
     version: VERSION,
     name,
-    racks: [createRackForNewLayout(name)],
+    racks: [], // Empty - user creates first rack via New Rack Wizard
     device_types: [], // Starter library is a runtime constant, not stored in layout
     settings: {
       display_mode: "label",
       show_labels_on_images: false,
     },
-  };
-}
-
-/**
- * Create a default rack for a new layout (internal helper)
- * @param name - Rack name
- * @returns A default 42U Rack with empty devices
- */
-function createRackForNewLayout(name: string): Rack {
-  return {
-    id: "rack-1",
-    name,
-    height: 42,
-    width: 19,
-    desc_units: false,
-    show_rear: true,
-    form_factor: "4-post-cabinet",
-    starting_unit: 1,
-    position: 0,
-    devices: [],
-    view: "front", // Runtime only
   };
 }
 

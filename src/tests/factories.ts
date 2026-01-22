@@ -362,6 +362,25 @@ export function setupStoreWithDevice() {
   return { store, rackId: rack.id, deviceSlug: deviceType.slug };
 }
 
+/**
+ * Helper to set up a store with just a rack (no devices).
+ * Use this when tests need a rack but don't need pre-placed devices.
+ * Returns the store and rack for test assertions.
+ */
+export function setupStoreWithRack(height: number = 42) {
+  const store = getLayoutStore();
+  if (!store) {
+    throw new Error("setupStoreWithRack: getLayoutStore() returned null");
+  }
+
+  const rack = store.addRack("Test Rack", height);
+  if (!rack) {
+    throw new Error("setupStoreWithRack: addRack() failed to create rack");
+  }
+
+  return { store, rack };
+}
+
 // =============================================================================
 // Constants
 // =============================================================================

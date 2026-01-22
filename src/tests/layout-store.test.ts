@@ -17,9 +17,8 @@ describe("Layout Store", () => {
       const store = getLayoutStore();
       expect(store.layout.name).toBe("Racky McRackface");
       expect(store.layout.version).toBe(VERSION);
-      // Multi-rack: starts with a default rack in the racks array
-      expect(store.layout.racks[0]).toBeDefined();
-      expect(store.layout.racks[0].devices).toEqual([]);
+      // Starts with empty racks array - user creates first rack via wizard
+      expect(store.layout.racks).toEqual([]);
       // device_types starts empty (starter library is a runtime constant, not stored)
       expect(store.layout.device_types.length).toBe(0);
     });
@@ -29,20 +28,21 @@ describe("Layout Store", () => {
       expect(store.isDirty).toBe(false);
     });
 
-    it("initializes hasRack as true", () => {
+    it("initializes hasRack as false before user adds a rack", () => {
       const store = getLayoutStore();
+      expect(store.hasRack).toBe(false);
+      // After adding a rack, hasRack is true
+      store.addRack("Test Rack", 42);
       expect(store.hasRack).toBe(true);
     });
 
-    it("rackCount is 0 before user starts, 1 after", () => {
+    it("rackCount starts at 0 and increases when racks are added", () => {
       const store = getLayoutStore();
-      // Before user starts, rackCount is 0 (WelcomeScreen shown)
+      // Starts with 0 racks
       expect(store.rackCount).toBe(0);
-      expect(store.hasStarted).toBe(false);
-      // After user starts, rackCount is 1
-      store.markStarted();
+      // After adding a rack, count is 1
+      store.addRack("Test Rack", 42);
       expect(store.rackCount).toBe(1);
-      expect(store.hasStarted).toBe(true);
     });
 
     it("canAddRack is true when under MAX_RACKS", () => {
@@ -50,10 +50,9 @@ describe("Layout Store", () => {
       expect(store.canAddRack).toBe(true);
     });
 
-    it("rack returns the active rack", () => {
+    it("rack returns null when no racks exist", () => {
       const store = getLayoutStore();
-      expect(store.rack).toBeDefined();
-      expect(store.rack.name).toBe("Racky McRackface");
+      expect(store.rack).toBeNull();
     });
   });
 
@@ -64,12 +63,12 @@ describe("Layout Store", () => {
       expect(store.layout.name).toBe("My Lab");
     });
 
-    it("initializes with default rack", () => {
+    it("creates empty layout with no racks", () => {
       const store = getLayoutStore();
       store.addRack("Test Rack", 42);
       store.createNewLayout("New Layout");
-      // v0.2 always has a rack, but devices should be empty
-      expect(store.layout.racks[0].devices).toEqual([]);
+      // New layouts start with no racks - user creates first rack via wizard
+      expect(store.layout.racks).toEqual([]);
     });
 
     it("resets device_types to empty array", () => {
@@ -1639,7 +1638,8 @@ describe("Layout Store", () => {
       const freshStore = getLayoutStore();
 
       expect(freshStore.layout.name).toBe("Racky McRackface");
-      expect(freshStore.layout.racks[0].devices).toEqual([]);
+      // Racks array starts empty - user creates first rack via wizard
+      expect(freshStore.layout.racks).toEqual([]);
       // device_types starts empty (starter library is a runtime constant, not stored)
       expect(freshStore.device_types.length).toBe(0);
       expect(freshStore.isDirty).toBe(false);

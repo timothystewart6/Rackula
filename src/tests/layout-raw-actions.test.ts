@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { getLayoutStore, resetLayoutStore } from "$lib/stores/layout.svelte";
-import { createTestDeviceType, createTestDevice } from "./factories";
+import {
+  createTestDeviceType,
+  createTestDevice,
+  setupStoreWithRack,
+} from "./factories";
 import { toInternalUnits } from "$lib/utils/position";
 
 describe("Layout Store - Raw Actions", () => {
@@ -36,7 +40,7 @@ describe("Layout Store - Raw Actions", () => {
     });
 
     it("removeDeviceTypeRaw also removes placed devices", () => {
-      const store = getLayoutStore();
+      const { store } = setupStoreWithRack();
       const deviceType = createTestDeviceType({ slug: "server-1" });
       store.addDeviceTypeRaw(deviceType);
       store.placeDeviceRaw({
@@ -72,7 +76,7 @@ describe("Layout Store - Raw Actions", () => {
     });
 
     it("getPlacedDevicesForType returns devices for a type", () => {
-      const store = getLayoutStore();
+      const { store } = setupStoreWithRack();
       store.addDeviceTypeRaw(createTestDeviceType({ slug: "type-a" }));
       store.addDeviceTypeRaw(createTestDeviceType({ slug: "type-b" }));
       store.placeDeviceRaw({
@@ -100,7 +104,7 @@ describe("Layout Store - Raw Actions", () => {
 
   describe("Device Raw Actions", () => {
     beforeEach(() => {
-      const store = getLayoutStore();
+      const { store } = setupStoreWithRack();
       store.addDeviceTypeRaw(createTestDeviceType({ slug: "test-device" }));
     });
 
@@ -184,7 +188,7 @@ describe("Layout Store - Raw Actions", () => {
 
   describe("Rack Raw Actions", () => {
     it("updateRackRaw updates rack settings", () => {
-      const store = getLayoutStore();
+      const { store } = setupStoreWithRack();
 
       store.updateRackRaw({ height: 48, name: "Updated Rack" });
 
@@ -193,7 +197,7 @@ describe("Layout Store - Raw Actions", () => {
     });
 
     it("updateRackRaw syncs layout name with rack name", () => {
-      const store = getLayoutStore();
+      const { store } = setupStoreWithRack();
 
       store.updateRackRaw({ name: "New Name" });
 
@@ -201,7 +205,7 @@ describe("Layout Store - Raw Actions", () => {
     });
 
     it("replaceRackRaw replaces entire rack", () => {
-      const store = getLayoutStore();
+      const { store } = setupStoreWithRack();
       const newRack = {
         name: "Replaced Rack",
         height: 24,
@@ -222,7 +226,7 @@ describe("Layout Store - Raw Actions", () => {
     });
 
     it("clearRackDevicesRaw clears all devices", () => {
-      const store = getLayoutStore();
+      const { store } = setupStoreWithRack();
       store.addDeviceTypeRaw(createTestDeviceType());
       store.placeDeviceRaw(createTestDevice({ position: 5 }));
       store.placeDeviceRaw(createTestDevice({ position: 15 }));
@@ -234,7 +238,7 @@ describe("Layout Store - Raw Actions", () => {
     });
 
     it("restoreRackDevicesRaw restores devices", () => {
-      const store = getLayoutStore();
+      const { store } = setupStoreWithRack();
       const devices = [
         createTestDevice({ position: 5 }),
         createTestDevice({ position: 15 }),

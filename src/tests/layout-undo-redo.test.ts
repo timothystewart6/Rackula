@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { getLayoutStore, resetLayoutStore } from "$lib/stores/layout.svelte";
 import { resetHistoryStore } from "$lib/stores/history.svelte";
 import { toInternalUnits } from "$lib/utils/position";
+import { setupStoreWithRack } from "./factories";
 
 describe("Layout Store - Undo/Redo Integration", () => {
   let initialDeviceTypeCount: number;
@@ -90,8 +91,7 @@ describe("Layout Store - Undo/Redo Integration", () => {
     });
 
     it("deleteDeviceTypeRecorded restores placed devices on undo", () => {
-      const store = getLayoutStore();
-      const rack = store.rack;
+      const { store, rack } = setupStoreWithRack();
 
       const dt = store.addDeviceTypeRecorded({
         name: "Test Server",
@@ -118,90 +118,88 @@ describe("Layout Store - Undo/Redo Integration", () => {
 
   describe("Device Operations", () => {
     beforeEach(() => {
-      const store = getLayoutStore();
+      const { store } = setupStoreWithRack();
       store.addDeviceTypeRecorded({
         name: "Test Server",
         u_height: 2,
         category: "server",
         colour: "#336699",
       });
-      // Clear history from adding device type
+      // Clear history from adding device type and rack
       store.clearHistory();
     });
 
     it("placeDeviceRecorded can be undone", () => {
       const store = getLayoutStore();
-      const rack = store.rack;
+      const rack = store.rack!;
       const dt = store.device_types[0]!;
 
       store.placeDeviceRecorded(rack.id, dt.slug, 10);
-      expect(store.rack.devices.length).toBe(1);
+      expect(store.rack!.devices.length).toBe(1);
 
       store.undo();
-      expect(store.rack.devices.length).toBe(0);
+      expect(store.rack!.devices.length).toBe(0);
     });
 
     it("moveDeviceRecorded can be undone", () => {
       const store = getLayoutStore();
-      const rack = store.rack;
+      const rack = store.rack!;
       const dt = store.device_types[0]!;
 
       store.placeDeviceRecorded(rack.id, dt.slug, 10);
       store.moveDeviceRecorded(rack.id, 0, 20);
-      expect(store.rack.devices[0]?.position).toBe(toInternalUnits(20));
+      expect(store.rack!.devices[0]?.position).toBe(toInternalUnits(20));
 
       store.undo();
-      expect(store.rack.devices[0]?.position).toBe(toInternalUnits(10));
+      expect(store.rack!.devices[0]?.position).toBe(toInternalUnits(10));
     });
 
     it("removeDeviceRecorded can be undone", () => {
       const store = getLayoutStore();
-      const rack = store.rack;
+      const rack = store.rack!;
       const dt = store.device_types[0]!;
 
       store.placeDeviceRecorded(rack.id, dt.slug, 10);
       store.removeDeviceRecorded(rack.id, 0);
-      expect(store.rack.devices.length).toBe(0);
+      expect(store.rack!.devices.length).toBe(0);
 
       store.undo();
-      expect(store.rack.devices.length).toBe(1);
-      expect(store.rack.devices[0]?.position).toBe(toInternalUnits(10));
+      expect(store.rack!.devices.length).toBe(1);
+      expect(store.rack!.devices[0]?.position).toBe(toInternalUnits(10));
     });
 
     it("updateDeviceFaceRecorded can be undone", () => {
       const store = getLayoutStore();
-      const rack = store.rack;
+      const rack = store.rack!;
       const dt = store.device_types[0]!;
 
       store.placeDeviceRecorded(rack.id, dt.slug, 10);
       // Full-depth devices (is_full_depth undefined or true) default to 'both' face
-      const originalFace = store.rack.devices[0]?.face;
+      const originalFace = store.rack!.devices[0]?.face;
       expect(originalFace).toBe("both");
 
       store.updateDeviceFaceRecorded(rack.id, 0, "rear");
-      expect(store.rack.devices[0]?.face).toBe("rear");
+      expect(store.rack!.devices[0]?.face).toBe("rear");
 
       store.undo();
-      expect(store.rack.devices[0]?.face).toBe("both");
+      expect(store.rack!.devices[0]?.face).toBe("both");
     });
   });
 
   describe("Rack Operations", () => {
     it("updateRackRecorded can be undone", () => {
-      const store = getLayoutStore();
-      const rack = store.rack;
+      const { store, rack } = setupStoreWithRack();
       const originalHeight = rack.height;
 
       store.updateRackRecorded(rack.id, { height: 48 });
-      expect(store.rack.height).toBe(48);
+      expect(store.rack!.height).toBe(48);
 
       store.undo();
-      expect(store.rack.height).toBe(originalHeight);
+      expect(store.rack!.height).toBe(originalHeight);
     });
 
     it("clearRackRecorded can be undone", () => {
-      const store = getLayoutStore();
-      const rack = store.rack;
+      const { store, rack } = setupStoreWithRack();
 
       store.addDeviceTypeRecorded({
         name: "Test Server",
@@ -213,13 +211,13 @@ describe("Layout Store - Undo/Redo Integration", () => {
 
       store.placeDeviceRecorded(rack.id, dt.slug, 5);
       store.placeDeviceRecorded(rack.id, dt.slug, 15);
-      expect(store.rack.devices.length).toBe(2);
+      expect(store.rack!.devices.length).toBe(2);
 
       store.clearRackRecorded();
-      expect(store.rack.devices.length).toBe(0);
+      expect(store.rack!.devices.length).toBe(0);
 
       store.undo();
-      expect(store.rack.devices.length).toBe(2);
+      expect(store.rack!.devices.length).toBe(2);
     });
   });
 
@@ -315,8 +313,7 @@ describe("Layout Store - Undo/Redo Integration", () => {
 
   describe("Multiple Operations", () => {
     it("can undo multiple operations in sequence", () => {
-      const store = getLayoutStore();
-      const rack = store.rack;
+      const { store, rack } = setupStoreWithRack();
 
       const dt = store.addDeviceTypeRecorded({
         name: "Server",
@@ -343,8 +340,7 @@ describe("Layout Store - Undo/Redo Integration", () => {
     });
 
     it("can redo multiple operations in sequence", () => {
-      const store = getLayoutStore();
-      const rack = store.rack;
+      const { store, rack } = setupStoreWithRack();
 
       const dt = store.addDeviceTypeRecorded({
         name: "Server",

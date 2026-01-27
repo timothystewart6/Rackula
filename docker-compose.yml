@@ -17,7 +17,7 @@ services:
     ports:
       - "${RACKULA_PORT:-8080}:8080"
     environment:
-      # API proxy target (override if API runs on different host/port)
+      # API proxy target (should match RACKULA_API_PORT in rackula-api service)
       - API_HOST=${API_HOST:-rackula-api}
       - API_PORT=${API_PORT:-3001}
     restart: unless-stopped

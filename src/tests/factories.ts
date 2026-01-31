@@ -29,6 +29,7 @@ import type {
 import type { Command, CommandType } from "$lib/stores/commands/types";
 import { toInternalUnits } from "$lib/utils/position";
 import { getLayoutStore } from "$lib/stores/layout.svelte";
+import { generateId } from "$lib/utils/device";
 
 // =============================================================================
 // Rack Factory
@@ -140,7 +141,7 @@ export function createTestDevice(
   // Convert position from human units to internal units
   const positionInHumanUnits = overrides.position ?? 10;
   return {
-    id: overrides.id ?? crypto.randomUUID(),
+    id: overrides.id ?? generateId(),
     device_type: "test-device",
     position: toInternalUnits(positionInHumanUnits),
     face: "front",
@@ -313,7 +314,7 @@ export function createTestContainerChild(
   overrides: Partial<PlacedDevice> & { container_id: string; slot_id: string },
 ): PlacedDevice {
   return {
-    id: overrides.id ?? crypto.randomUUID(),
+    id: overrides.id ?? generateId(),
     device_type: overrides.device_type ?? "test-device",
     position: overrides.position ?? 0, // 0-indexed relative position in container
     face: overrides.face ?? "front",

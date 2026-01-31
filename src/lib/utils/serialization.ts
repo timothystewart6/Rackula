@@ -4,6 +4,7 @@
 
 import type { Layout, Rack, FormFactor } from "$lib/types";
 import { VERSION } from "$lib/version";
+import { generateId } from "./device";
 
 /**
  * Create a new empty layout
@@ -19,6 +20,11 @@ export function createLayout(name: string = "Racky McRackface"): Layout {
     settings: {
       display_mode: "label",
       show_labels_on_images: false,
+    },
+    metadata: {
+      id: generateId(),
+      name,
+      schema_version: "1.0",
     },
   };
 }

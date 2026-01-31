@@ -13,6 +13,21 @@
 export type RackView = "front" | "rear";
 
 /**
+ * Metadata for layout persistence and export
+ * @see docs/plans/2026-01-22-data-directory-refactor-design.md
+ */
+export interface LayoutMetadata {
+  /** UUID - stable identity across renames/moves */
+  id: string;
+  /** Human-readable layout name */
+  name: string;
+  /** Format version for future migrations (e.g., "1.0") */
+  schema_version: string;
+  /** Optional notes about the layout */
+  description?: string;
+}
+
+/**
  * Device face types - which face(s) of rack device occupies
  */
 export type DeviceFace = "front" | "rear" | "both";
@@ -687,6 +702,8 @@ export interface Layout {
    * @deprecated Use connections instead - cables uses fragile device+interface references
    */
   cables?: Cable[];
+  /** Metadata for persistence (UUID, name, description, etc.) */
+  metadata?: Partial<LayoutMetadata>;
 }
 
 // =============================================================================

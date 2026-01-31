@@ -46,8 +46,6 @@ import { instantiatePorts } from "$lib/utils/port-utils";
 import { sanitizeFilename } from "$lib/utils/imageUpload";
 import { getHistoryStore } from "./history.svelte";
 import { getImageStore } from "./images.svelte";
-import { getStarterSlugs } from "$lib/data/starterLibrary";
-import { getBrandSlugs } from "$lib/data/brandPacks";
 import {
   createAddDeviceTypeCommand,
   createUpdateDeviceTypeCommand,
@@ -345,12 +343,21 @@ function createNewLayout(name: string): void {
  * @param layoutData - Layout to load
  */
 function loadLayout(layoutData: Layout): void {
+  // Ensures metadata with UUID exists for persistence
+  const metadata = layoutData.metadata
+    ? { ...layoutData.metadata }
+    : { id: generateId() };
+  if (!metadata.id) {
+    metadata.id = generateId();
+  }
+
   // Track seen IDs to detect duplicates
   const seenIds = new SvelteSet<string>();
 
   // Ensure runtime view is set, show_rear defaults, and all racks have valid IDs
   layout = {
     ...layoutData,
+    metadata,
     racks: layoutData.racks.map((r, index) => {
       // Generate ID if missing or duplicate
       let rackId = r.id && r.id.trim().length > 0 ? r.id : generateRackId();
@@ -1621,7 +1628,7 @@ function placeInContainer(
 
   // Create placed device with container reference
   const placedDevice: PlacedDevice = {
-    id: crypto.randomUUID(),
+    id: generateId(),
     device_type: deviceTypeSlug,
     position, // 0-indexed within container
     face: container.face, // Inherit parent face

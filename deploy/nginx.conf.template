@@ -20,13 +20,27 @@ server {
 
     # API proxy (when sidecar is running)
     # Use variable to defer DNS resolution to request time (allows nginx to start without API)
-    # Note: With variable-based proxy_pass, URI is NOT appended, so we pass to base URL
+    # Using $uri$is_args$args for normalized path+query (safer than $request_uri)
     # Configure via environment variables: API_HOST (default: rackula-api), API_PORT (default: 3001)
     # Note: NGINX_ENVSUBST_FILTER in Dockerfile restricts substitution to API_HOST, API_PORT, and RACKULA_LISTEN_PORT only
+    
+    # API health check - used by frontend to detect persistence API availability
+    # Returns 502/503 if API is unavailable (intentional - signals API is down)
+    # Preserves query parameters for potential diagnostics/verbosity flags
+    location = /api/health {
+        resolver 127.0.0.11 valid=30s;
+        set $api_upstream ${API_HOST};
+        proxy_pass http://$api_upstream:${API_PORT}/health$is_args$args;
+        proxy_http_version 1.1;
+        proxy_connect_timeout 3s;
+        proxy_read_timeout 3s;
+        # No fallback - let it fail to signal API unavailability
+    }
+    
     location /api/ {
         resolver 127.0.0.11 valid=30s;
         set $api_upstream ${API_HOST};
-        proxy_pass http://$api_upstream:${API_PORT};
+        proxy_pass http://$api_upstream:${API_PORT}$uri$is_args$args;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -47,20 +61,10 @@ server {
         return 503 '{"error": "Persistence API unavailable"}';
     }
 
-    # Health check endpoint (proxied to API when available)
+    # Container health check - used by Docker/K8s for liveness/readiness probes
+    # Always returns 200 OK because nginx can serve the frontend even without API
+    # This endpoint checks the frontend container health, not API availability
     location = /health {
-        resolver 127.0.0.11 valid=30s;
-        set $api_upstream ${API_HOST};
-        proxy_pass http://$api_upstream:${API_PORT}/health;
-        proxy_connect_timeout 2s;
-        proxy_read_timeout 2s;
-
-        # Fallback when API unavailable
-        proxy_intercept_errors on;
-        error_page 502 503 504 = @health_fallback;
-    }
-
-    location @health_fallback {
         access_log off;
         default_type text/plain;
         return 200 "OK";
@@ -78,11 +82,15 @@ server {
 
     # Content Security Policy - defense-in-depth against XSS
     # See: https://github.com/RackulaLives/Rackula/issues/102
-    # - script-src: Allow scripts from self, analytics domains, and inline (required for Cloudflare Web Analytics)
-    # - style-src 'self' 'unsafe-inline': Allow inline styles (required for Svelte scoped styles)
+    # - script-src: Allow scripts from self, analytics domains, and specific inline redirect script (via hash)
+    #   Hash is sha256 of the SPA redirect script in index.html - this removes need for 'unsafe-inline'
+    # - style-src 'self' 'unsafe-inline': Allow inline styles (required for Svelte component scoped styles)
     # - img-src 'self' data: blob:: Allow images from same origin, data URLs, and blob URLs (for exports/previews)
     # - font-src 'self' fonts.gstatic.com: Allow fonts from same origin and Google Fonts
-    # - connect-src: Allow XHR/fetch to same origin and analytics endpoints
+    # - connect-src 'self' analytics: Allow XHR/fetch to same origin and analytics endpoints
     # - frame-ancestors 'self': Prevent framing by other sites (reinforces X-Frame-Options)
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://t.racku.la https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://t.racku.la https://static.cloudflareinsights.com; frame-ancestors 'self';" always;
+    # Analytics domains:
+    #   - t.racku.la: Self-hosted Umami analytics (privacy-focused, GDPR-compliant)
+    #   - static.cloudflareinsights.com: Cloudflare Web Analytics (privacy-focused, no cookies)
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-MS6/3FCg4WjP9gwgaBGwLpRCY6fZBgwmhVCdrPrNf3E=' https://t.racku.la https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://t.racku.la https://static.cloudflareinsights.com; frame-ancestors 'self';" always;
 }

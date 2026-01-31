@@ -22,7 +22,7 @@
  * @see docs/plans/2026-01-22-data-directory-refactor-design.md
  */
 
-import type { Layout } from "$lib/types";
+import type { Layout, LayoutMetadata } from "$lib/types";
 import type { ImageData, ImageStoreMap } from "$lib/types/images";
 import { serializeLayoutToYamlWithMetadata, parseLayoutYaml } from "./yaml";
 import { generateId } from "./device";
@@ -170,20 +170,6 @@ function hasCustomImages(images: ImageStoreMap): boolean {
     }
   }
   return false;
-}
-
-/**
- * Metadata for layout export/import
- */
-export interface LayoutMetadata {
-  /** UUID - stable identity across renames/moves */
-  id: string;
-  /** Human-readable layout name */
-  name: string;
-  /** Format version for future migrations (e.g., "1.0") */
-  schema_version: string;
-  /** Optional notes about the layout */
-  description?: string;
 }
 
 /**
@@ -404,7 +390,8 @@ async function extractOldFormatZip(
 
   // Find all image files (both at root and in images/ folder)
   const imageFiles = Object.keys(zip.files).filter(
-    (path) => !zip.files[path]!.dir && isImageFile(path) && path !== format.yamlPath,
+    (path) =>
+      !zip.files[path]!.dir && isImageFile(path) && path !== format.yamlPath,
   );
 
   for (const imagePath of imageFiles) {

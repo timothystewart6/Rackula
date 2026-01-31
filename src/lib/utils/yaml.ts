@@ -7,7 +7,14 @@
  * The library is only loaded when save/load operations are performed.
  */
 
-import type { Layout, DeviceType, PlacedDevice, Rack, Cable } from "$lib/types";
+import type {
+  Layout,
+  DeviceType,
+  PlacedDevice,
+  Rack,
+  Cable,
+  LayoutMetadata,
+} from "$lib/types";
 import { LayoutSchema, type LayoutZod } from "$lib/schemas";
 
 /**
@@ -193,21 +200,6 @@ function orderCableFields(cable: Cable): Record<string, unknown> {
 }
 
 /**
- * Metadata for layout export with UUID support (#919)
- * @see docs/plans/2026-01-22-data-directory-refactor-design.md
- */
-export interface LayoutMetadata {
-  /** UUID - stable identity across renames/moves */
-  id: string;
-  /** Human-readable layout name */
-  name: string;
-  /** Format version for future migrations (e.g., "1.0") */
-  schema_version: string;
-  /** Optional notes about the layout */
-  description?: string;
-}
-
-/**
  * Order metadata fields according to design spec
  * Field order: id, name, schema_version, description
  */
@@ -229,15 +221,32 @@ function orderMetadataFields(
 /**
  * Serialize a layout to YAML string
  * Excludes runtime-only fields (view) and orders fields according to schema v1.0.0
+ * Includes metadata if present
  */
 export async function serializeLayoutToYaml(layout: Layout): Promise<string> {
-  const layoutForSerialization: Record<string, unknown> = {
-    version: layout.version,
-    name: layout.name,
-    racks: layout.racks.map(orderRackFields),
-    device_types: layout.device_types.map(orderDeviceTypeFields),
-    settings: layout.settings,
-  };
+  const layoutForSerialization: Record<string, unknown> = {};
+
+  // Include metadata at the top if present
+  if (layout.metadata?.id != null) {
+    const metadataForSerialization: LayoutMetadata = {
+      id: layout.metadata.id,
+      name: layout.metadata.name ?? layout.name,
+      schema_version: layout.metadata.schema_version || "1.0",
+      description: layout.metadata.description,
+    };
+    layoutForSerialization.metadata = orderMetadataFields(
+      metadataForSerialization,
+    );
+  }
+
+  // Standard layout fields
+  layoutForSerialization.version = layout.version;
+  layoutForSerialization.name = layout.name;
+  layoutForSerialization.racks = layout.racks.map(orderRackFields);
+  layoutForSerialization.device_types = layout.device_types.map(
+    orderDeviceTypeFields,
+  );
+  layoutForSerialization.settings = layout.settings;
 
   // Only include rack_groups if present
   if (layout.rack_groups !== undefined && layout.rack_groups.length > 0) {

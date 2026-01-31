@@ -86,6 +86,8 @@
   import {
     saveLayoutToServer,
     checkApiHealth,
+    listSavedLayouts,
+    loadSavedLayout,
     type SaveStatus as SaveStatusType,
     PersistenceError,
   } from "$lib/utils/persistence-api";
@@ -228,9 +230,16 @@
   // Auto-open new rack dialog when no racks exist (first-load experience)
   // Also handles loading shared layouts from URL params
   // Uses onMount to run once on initial load, not reactively
-  onMount(() => {
+  onMount(async () => {
     // Non-blocking: start API health check in background for server persistence
-    initializePersistence();
+    try {
+      await initializePersistence();
+    } catch (error) {
+      console.error(
+        "Persistence initialization failed; continuing without server persistence:",
+        error,
+      );
+    }
 
     // Priority 1: Check for shared layout in URL (highest priority)
     const shareParam = getShareParam();
@@ -267,7 +276,38 @@
       return;
     }
 
-    // Priority 3: No share link or autosave, show new rack dialog if empty
+    // Priority 3: Check for saved layouts from server (if API is available)
+    if (isApiAvailable()) {
+      try {
+        const savedLayouts = await listSavedLayouts();
+        if (savedLayouts.length > 0) {
+          // Sort by updatedAt descending and load the most recent
+          const mostRecent = savedLayouts.toSorted(
+            (a, b) =>
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+          )[0]!;
+
+          const serverLayout = await loadSavedLayout(mostRecent.id);
+          layoutStore.loadLayout(serverLayout);
+          layoutStore.markClean();
+          toastStore.showToast(
+            `Loaded "${mostRecent.name}" from server`,
+              "success",
+            );
+
+            // Reset view to center the loaded rack after DOM updates
+            requestAnimationFrame(() => {
+              canvasStore.fitAll(layoutStore.racks, layoutStore.rack_groups);
+            });
+            return;
+        }
+      } catch (error) {
+        // If loading fails, just continue to show new rack dialog
+        console.warn("Failed to load saved layouts from server:", error);
+      }
+    }
+
+    // Priority 4: No share link, autosave, or saved layouts - show new rack dialog if empty
     if (layoutStore.rackCount === 0) {
       dialogStore.open("newRack");
     }

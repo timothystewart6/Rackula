@@ -18,6 +18,8 @@
 
   interface Props {
     open: boolean;
+    /** Active rack width for smart defaulting (10, 19, 21, or 23) */
+    activeRackWidth?: number;
     onadd?: (data: {
       name: string;
       height: number;
@@ -26,13 +28,40 @@
       notes: string;
       isFullDepth: boolean;
       isHalfWidth: boolean;
+      rackWidths: number[];
       frontImage?: ImageData;
       rearImage?: ImageData;
     }) => void;
     oncancel?: () => void;
   }
 
-  let { open, onadd, oncancel }: Props = $props();
+  let { open, activeRackWidth, onadd, oncancel }: Props = $props();
+
+  // Rack width options for selector
+  type RackWidthOption = "10" | "19" | "both";
+  const rackWidthOptions: { value: RackWidthOption; label: string }[] = [
+    { value: "10", label: "10 inch" },
+    { value: "19", label: "19 inch" },
+    { value: "both", label: 'Both (10" & 19")' },
+  ];
+
+  // Get default rack width option based on active rack
+  function getDefaultRackWidthOption(): RackWidthOption {
+    if (activeRackWidth === 10) return "10";
+    return "19"; // Default to 19" for 19/21/23" racks or no active rack
+  }
+
+  // Convert option to rack_widths array
+  function optionToRackWidths(option: RackWidthOption): number[] {
+    switch (option) {
+      case "10":
+        return [10];
+      case "19":
+        return [19];
+      case "both":
+        return [10, 19];
+    }
+  }
 
   // Form state
   let name = $state("");
@@ -42,6 +71,7 @@
   let notes = $state("");
   let isFullDepth = $state(true);
   let isHalfWidth = $state(false);
+  let rackWidthOption = $state<RackWidthOption>(getDefaultRackWidthOption());
   let userChangedColour = $state(false);
 
   // Image state (v0.1.0)
@@ -62,6 +92,7 @@
       notes = "";
       isFullDepth = true;
       isHalfWidth = false;
+      rackWidthOption = getDefaultRackWidthOption();
       userChangedColour = false;
       nameError = "";
       heightError = "";
@@ -132,6 +163,7 @@
         notes: notes.trim(),
         isFullDepth,
         isHalfWidth,
+        rackWidths: optionToRackWidths(rackWidthOption),
         frontImage,
         rearImage,
       });
@@ -265,6 +297,21 @@
         label="Half Width"
         helperText="Occupies left or right half of rack width"
       />
+    </div>
+
+    <!-- Rack width selector (#970) -->
+    <div class="form-group">
+      <label for="device-rack-width">Rack Width</label>
+      <select
+        id="device-rack-width"
+        class="input-field"
+        bind:value={rackWidthOption}
+      >
+        {#each rackWidthOptions as option (option.value)}
+          <option value={option.value}>{option.label}</option>
+        {/each}
+      </select>
+      <span class="helper-text">Which rack sizes this device fits</span>
     </div>
 
     <!-- Image uploads (v0.1.0) -->

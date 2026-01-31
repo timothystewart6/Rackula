@@ -789,6 +789,7 @@
     notes: string;
     isFullDepth: boolean;
     isHalfWidth: boolean;
+    rackWidths: number[];
     frontImage?: ImageData;
     rearImage?: ImageData;
   }) {
@@ -800,6 +801,7 @@
       comments: data.notes || undefined,
       is_full_depth: data.isFullDepth ? undefined : false,
       slot_width: data.isHalfWidth ? 1 : undefined,
+      rack_widths: data.rackWidths,
     });
 
     // Store images if provided (v0.1.0)
@@ -1159,8 +1161,8 @@
     }
 
     // Debounced save with status tracking
-    // Clone layout to prevent race conditions if it mutates during async save
-    const snapshot = structuredClone(layout);
+    // Use $state.snapshot to get plain object from Svelte 5 proxy, then clone
+    const snapshot = structuredClone($state.snapshot(layout));
     serverSaveTimer = setTimeout(async () => {
       saveStatus = "saving";
       try {
@@ -1372,6 +1374,7 @@
 
     <AddDeviceForm
       open={addDeviceFormOpen}
+      activeRackWidth={layoutStore.activeRack?.width}
       onadd={handleAddDeviceCreate}
       oncancel={handleAddDeviceCancel}
     />

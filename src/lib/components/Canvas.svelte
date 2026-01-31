@@ -547,20 +547,15 @@
     /* Multi-rack mode: horizontal layout of all racks */
     display: flex;
     flex-direction: row;
+    align-items: flex-start; /* Prevent shorter racks from stretching to match tallest */
     gap: var(--space-6);
     padding: var(--space-4);
   }
 
   .rack-wrapper {
-    /* Individual rack container with active indicator */
+    /* Individual rack container - selection styling handled by RackDualView */
     display: inline-block;
     border-radius: var(--radius-lg);
-    transition: box-shadow var(--duration-fast) var(--ease-out);
-  }
-
-  .rack-wrapper.active {
-    /* Active rack visual indicator - accent outline */
-    box-shadow: 0 0 0 3px var(--colour-selection);
   }
 
   /* Rack group visual container (for non-bayed groups; bayed uses BayedRackView) */
@@ -586,6 +581,7 @@
   .group-racks {
     display: flex;
     flex-direction: row;
+    align-items: flex-start; /* Prevent shorter racks from stretching */
     gap: var(--space-4);
   }
 

@@ -13,7 +13,7 @@
     getCategoryDisplayName,
     sortDevicesByBrandThenModel,
     sortDevicesAlphabetically,
-    isDeviceCompatibleWithRackWidth,
+    filterDevicesByRackWidth,
   } from "$lib/utils/deviceFilters";
   import {
     loadGroupingModeFromStorage,
@@ -125,29 +125,8 @@
   // Get brand packs
   const brandPacks = getBrandPacks();
 
-  // Get active rack width for compatibility check (defaults to 19" standard if no active rack)
-  // Uses minimum-width logic: devices fit if rack width >= device width
+  // Get active rack width for filtering (defaults to 19" standard if no active rack)
   const activeRackWidth = $derived(layoutStore.activeRack?.width ?? 19);
-
-  /**
-   * Check if a device is compatible with the current active rack width.
-   */
-  function checkDeviceCompatibility(device: DeviceType): boolean {
-    return isDeviceCompatibleWithRackWidth(device, activeRackWidth);
-  }
-
-  /**
-   * Generate tooltip text explaining why a device is incompatible with the current rack.
-   * Returns empty string if the device is compatible.
-   */
-  function getIncompatibilityReason(device: DeviceType): string {
-    if (checkDeviceCompatibility(device)) {
-      return "";
-    }
-    const deviceWidths = device.rack_widths?.length ? device.rack_widths : [19];
-    const minWidth = Math.min(...deviceWidths);
-    return `Requires ${minWidth}" rack (current: ${activeRackWidth}")`;
-  }
 
   // Get unused custom device type slugs for showing delete buttons
   // This is reactive and updates when devices are placed/removed
@@ -257,21 +236,25 @@
     ];
   });
 
-  // Search generic devices (merged starter + layout) - no longer filtering by rack width
-  // Compatibility is now shown visually instead of hiding devices
+  // Filter and search generic devices - only show devices compatible with active rack
   const filteredGenericDevices = $derived(
-    searchDevices(allGenericDevices, searchQuery),
+    searchDevices(
+      filterDevicesByRackWidth(allGenericDevices, activeRackWidth),
+      searchQuery,
+    ),
   );
   const groupedGenericDevices = $derived(
     groupDevicesByCategory(filteredGenericDevices),
   );
 
-  // Search brand pack devices - no longer filtering by rack width
-  // Compatibility is now shown visually instead of hiding devices
+  // Filter and search brand pack devices - only show compatible devices
   const filteredBrandPacks = $derived(
     brandPacks.map((pack) => ({
       ...pack,
-      devices: searchDevices(pack.devices, searchQuery),
+      devices: searchDevices(
+        filterDevicesByRackWidth(pack.devices, activeRackWidth),
+        searchQuery,
+      ),
     })),
   );
 
@@ -282,12 +265,13 @@
     ),
   );
 
-  // All devices combined (for category and flat modes) - no longer filtering by rack width
-  // Compatibility is now shown visually instead of hiding devices
-  const allDevicesCombined = $derived([
-    ...allGenericDevices,
-    ...brandPacks.flatMap((p) => p.devices),
-  ]);
+  // All devices combined (for category and flat modes) - filtered by rack width
+  const allDevicesCombined = $derived(
+    filterDevicesByRackWidth(
+      [...allGenericDevices, ...brandPacks.flatMap((p) => p.devices)],
+      activeRackWidth,
+    ),
+  );
   const filteredAllDevices = $derived(
     searchDevices(allDevicesCombined, searchQuery),
   );
@@ -308,7 +292,7 @@
     "other",
   ];
 
-  // Sections for brand mode (current behavior)
+  // Sections for brand mode - filter out empty sections (no compatible devices)
   const brandModeSections = $derived<DeviceSection[]>(
     [
       {
@@ -318,23 +302,25 @@
         defaultExpanded: true,
       },
       ...sortedBrandPacks,
-    ].map((section) => {
-      if (!isSearchActive) {
-        return section;
-      }
+    ]
+      .filter((section) => section.devices.length > 0)
+      .map((section) => {
+        if (!isSearchActive) {
+          return section;
+        }
 
-      // During search, compute match info
-      const matchCount = section.devices.length;
-      const firstMatch = section.devices[0] ?? null;
-      const isEmpty = matchCount === 0;
+        // During search, compute match info
+        const matchCount = section.devices.length;
+        const firstMatch = section.devices[0] ?? null;
+        const isEmpty = matchCount === 0;
 
-      return {
-        ...section,
-        matchCount,
-        firstMatch,
-        isEmpty,
-      };
-    }),
+        return {
+          ...section,
+          matchCount,
+          firstMatch,
+          isEmpty,
+        };
+      }),
   );
 
   // Sections for category mode
@@ -530,10 +516,6 @@
                             <DevicePaletteItem
                               {device}
                               searchQuery={isSearchActive ? searchQuery : ""}
-                              isCompatible={checkDeviceCompatibility(device)}
-                              incompatibilityReason={getIncompatibilityReason(
-                                device,
-                              )}
                               canDelete={canDeleteDevice(device)}
                               onselect={handleDeviceSelect}
                               ondelete={handleDeviceDelete}
@@ -550,8 +532,6 @@
                       <DevicePaletteItem
                         {device}
                         searchQuery={isSearchActive ? searchQuery : ""}
-                        isCompatible={checkDeviceCompatibility(device)}
-                        incompatibilityReason={getIncompatibilityReason(device)}
                         canDelete={canDeleteDevice(device)}
                         onselect={handleDeviceSelect}
                         ondelete={handleDeviceDelete}

@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.6] - 2026-01-31
+
+### Added
+
+- Rack width selector in custom device form with smart defaults based on active rack (#970)
+
+### Changed
+
+- Device palette now hides incompatible devices instead of graying them out (#996)
+- Empty brand categories are hidden when no compatible devices are available
+
+### Fixed
+
+- Custom devices cannot be created for 10" racks - now properly supports 10", 19", or both (#970)
+- Shorter racks stretch to match tallest rack height in multi-rack layout (#997)
+- structuredClone fails on Svelte 5 state proxy during auto-save (#998)
+- Double selection highlight on active rack (#999)
+
 ## [0.7.5] - 2026-01-30
 
 ### Added

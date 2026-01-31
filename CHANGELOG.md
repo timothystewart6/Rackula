@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.4] - 2026-01-30
+
+This release introduces the `:persist` image tag, enabling persistence for self-hosted installs via the rackula-api server-side container. See the [Self-Hosting Guide](docs/guides/SELF-HOSTING.md) for details.
+
+### Added
+
+- Cisco brand pack with core homelab/enterprise devices (#987, PR #988)
+- Custom brand icons for AC Infinity, CyberPower, DeskPi, and Netgate
+- 8 new brand icons from simple-icons: Fortinet, Netgear, Palo Alto, Cisco, QNAP, Lenovo, Blackmagic Design, Apple (#990, PR #991)
+- CI workflow to publish :persist Docker image tag (#973, PR #974)
+
+### Changed
+
+- Unified API port configuration under RACKULA_API_PORT environment variable (#960, #962)
+- Refactored self-hosting documentation for current deployment methodology (#944, PR #976)
+- Docker compose now references :persist image tag (PR #975)
+
+### Fixed
+
+- Duplicate slug detection and airflow normalization for brand pack devices (PR #989)
+- nginx envsubst escaping for read-only container filesystems (#968)
+- Docker healthcheck now uses PORT environment variable (#961, PR #955)
+
+### Technical
+
+- Dependencies: svelte 5.48.5, simple-icons 16.6.1, happy-dom 20.4.0, @types/node 25.1.0, globals 17.2.0
+- GitHub Actions updates (PR #959)
+
 ## [0.7.3] - 2026-01-24
 
 ### Fixed

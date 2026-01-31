@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Custom devices cannot be created for 10" racks - now properly supports 10", 19", or both (#970)
+- Custom devices cannot be created for 10-inch racks - now properly supports 10-inch, 19-inch, or both (#970)
 - Shorter racks stretch to match tallest rack height in multi-rack layout (#997)
 - structuredClone fails on Svelte 5 state proxy during auto-save (#998)
 - Double selection highlight on active rack (#999)

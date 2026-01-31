@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.5] - 2026-01-30
+
+### Added
+
+- Configurable nginx listen port via `RACKULA_LISTEN_PORT` environment variable (#980, PR #994)
+  - Enables advanced deployments where container and host ports need to match
+  - Backward compatible: existing deployments unchanged
+  - Thanks to @stavros-k for the feature request and initial implementation
+
+### Technical
+
+- Bump Svelte from 5.48.5 to 5.49.0 (PR #981)
+- Bump bits-ui from 2.15.4 to 2.15.5 (PR #982)
+- Bump @eslint/compat from 2.0.1 to 2.0.2 (PR #985)
+- Bump development dependencies (PR #992)
+
 ## [0.7.4] - 2026-01-30
 
 This release introduces the `:persist` image tag, enabling persistence for self-hosted installs via the rackula-api server-side container. See the [Self-Hosting Guide](docs/guides/SELF-HOSTING.md) for details.

@@ -162,11 +162,39 @@ jobs:
   deploy:
     needs: [build-and-deploy, build-persist, build-api]
     runs-on: [self-hosted, vps-rackula]
-    permissions: {}
+    permissions:
+      contents: read
 
     steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          sparse-checkout: |
+            docker-compose.yml
+
+      - name: Sync docker-compose.yml to prod
+        run: |
+          cp docker-compose.yml /opt/rackula/rackula-app/docker-compose.yml
+          # Ensure RACKULA_PORT is set (localhost only - Caddy handles external traffic)
+          # Uses grep+echo pattern to avoid overwriting other env vars
+          ENV_FILE=/opt/rackula/rackula-app/.env
+          touch "$ENV_FILE"
+          grep -q '^RACKULA_PORT=' "$ENV_FILE" || echo "RACKULA_PORT=127.0.0.1:8080" >> "$ENV_FILE"
+
       - name: Deploy to prod
         run: |
           cd /opt/rackula/rackula-app
-          docker compose --profile persist pull
-          docker compose --profile persist up -d
+          # Stop old container if exists (name changed from rackula-app to rackula)
+          docker stop rackula-app 2>/dev/null && docker rm rackula-app 2>/dev/null || true
+          docker compose pull
+          docker compose up -d --remove-orphans
+
+  smoke-test:
+    needs: deploy
+    runs-on: [self-hosted, vps-rackula]
+    permissions: {}
+
+    steps:
+      - name: Verify deployment
+        run: |
+          sleep 5
+          curl -sf --retry 5 --retry-delay 3 https://count.racku.la
